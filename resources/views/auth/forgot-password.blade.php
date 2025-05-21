@@ -4,7 +4,7 @@
     @csrf
 
     <div class="form-group">
-        <label for="email">Already register </label>
+           <label for="email">Registered Email</label> 
         <input type="email"
                id="email"
                name="email"
