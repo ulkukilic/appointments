@@ -1,0 +1,55 @@
+
+.logo img {
+    width: 75px;
+}
+
+.header {
+    background-color: #dfdfdf;
+    border-bottom: 0px solid #edf2f9;
+}
+
+.logo{
+    background-color: #223143;
+}
+.header .nav-left li>a{
+color: #223143;
+}
+.header .nav-left li>a:hover, .header .nav-left li>a:focus, .header .nav-left li>a:active{
+    color: #353434;
+    background-color: rgba(22, 22, 22, 0.15);
+}
+@media only screen and (min-width: 992px) {
+    .is-folded .logo .logo-fold {
+        width: 65px;
+    }
+}
+
+
+/* Toastr özelleştirme */
+.toast {
+    opacity: 1 !important; /* Şeffaflığı kaldır */
+}
+
+.toast-success {
+    background-color: #28a745 !important; /* Yeşil arka plan */
+    color: #ffffff !important; /* Beyaz yazı */
+}
+
+.toast-error {
+    background-color: #dc3545 !important; /* Kırmızı arka plan */
+    color: #ffffff !important; /* Beyaz yazı */
+}
+
+.toast-info {
+    background-color: #17a2b8 !important; /* Mavi arka plan */
+    color: #ffffff !important; /* Beyaz yazı */
+}
+
+.toast-warning {
+    background-color: #ffc107 !important; /* Sarı arka plan */
+    color: #000000 !important; /* Siyah yazı */
+}
+
+.toast-message {
+    color: inherit !important; /* Mesaj rengini miras al */
+}
