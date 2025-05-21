@@ -113,7 +113,7 @@ class AuthController extends Controller
             'password'  => Hash::make($validated['password']), // plain password bcrypt ile hash'lenir
             'user_type_id'  => 1,       ////// yeni kayıtta default müşteri tipi (1) atandı
             'created_at'=> Carbon::now(),
-            'updated_at'=> Carbon::now(),
+            
         ]);
 
         // kayit sonrasi login sayfasina yonlendirr 
