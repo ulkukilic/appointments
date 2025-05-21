@@ -39,7 +39,7 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             //  Birincil anahtar user_id: unsigned INT auto-increment
-            $table->increments('user_id');
+            $table->increments('user_uni_id');
 
             // full_name: VARCHAR(100), zorunlu
             $table->string('full_name', 100);
@@ -60,8 +60,7 @@ class CreateUsersTable extends Migration
             $table->enum('gender', ['Female','Male','Other']);
 
             //  created_at: DATETIME, default CURRENT_TIMESTAMP
-            $table->timestamp('created_at')->useCurrent();
-
+             $table->timestamps(); 
             // user_type_id üzerinde index ve foreign key
             $table->index('user_type_id');
             $table->foreign('user_type_id')

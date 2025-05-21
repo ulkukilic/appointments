@@ -33,3 +33,16 @@ Route::get('/forgot-password',        [AuthController::class, 'showLinkRequestFo
 Route::post('/forgot-password',       [AuthController::class, 'sendResetLinkEmail'])->name('password.email');
 Route::get('/reset-password/{token}', [AuthController::class, 'showResetForm'])->name('password.reset.form');
 Route::post('/reset-password',        [AuthController::class, 'reset'])->name('password.reset');
+
+// ////// DASHBOARD ROUTELARI – model yerine blade view’a direk yönlendiriyoruz
+Route::get('/dash/customer', function () {
+    return view('dash.customer');
+})->name('dash.customer');
+
+Route::get('/dash/admin', function () {
+    return view('dash.admin');
+})->name('dash.admin');
+
+Route::get('/dash/superadmin', function () {
+    return view('dash.superAdmin');
+})->name('dash.superadmin');

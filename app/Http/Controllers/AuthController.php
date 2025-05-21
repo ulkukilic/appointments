@@ -28,8 +28,42 @@ class AuthController extends Controller
             'email'    => 'required|email',
             'password' => 'required',
         ]);
+             $user=DB::table('users')
+             ->Where('email',$request->email)
+             ->first(); // burda users tablosunda kaydi cekiyoruz
+             
+             if($user && Hash::check($request->password,$user->password))
+             {//sifre kontrolu yapiliyor ve icerisinde ki degerler user tablosundaki degerlere bakiyor
+                session([
+                    'user_uni_id' => $user->user_uni_id,
+                    'user_type_id'=>$user-> user_type_id,
+                    'full_name'=>$user->full_name,
+                    'email'=>$user->email,
+                ]);
 
-        // Auth::attempt ile giris yapmayi dener  kimlik dogrulaasi yapmaya calsiri
+                  // password dogru ve bilgilerde eslesme varsa o zaman user_type devreye giriyor ve logindan sonra gonderilmesi gereken panel sayfasina yonlendiriyor
+                   if ($user->user_type_id == 1) 
+                   {
+                      return redirect()->route('dash.customer');
+                   } 
+                   elseif ($user->user_type_id == 2) 
+                   {
+                    return redirect()->route('dash.admin');
+                   } 
+                   elseif ($user->user_type_id == 3)
+                   {
+                   return redirect()->route('dash.superadmin');
+                   }
+        }
+
+        return back()
+            ->withErrors(['email' => 'E-posta veya şifre hatalı.'])
+            ->withInput($request->only('email'));
+    }
+             
+
+      /* MODELS YAPISI KULLANIRKENN
+       // Auth::attempt ile giris yapmayi dener  kimlik dogrulaasi yapmaya calsiri
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();  
             return redirect()->intended('dashboard');
@@ -40,13 +74,19 @@ class AuthController extends Controller
             ->withErrors(['email' => 'E-posta veya şifre hatalı.'])
             ->withInput($request->only('email'));
     }
-
-    public function logout(Request $request)
+              public function logout(Request $request)
     {
         Auth::logout();                               // Oturumu kapat
         $request->session()->invalidate();             // Session oturum kapandigi icin temizler
         $request->session()->regenerateToken();       
         return redirect()->route('login.form');       // Giriş sayfasına geri doner
+    }
+    */
+            public function logout(Request $request)
+    {
+        // tutulan bilgier session da tutuldugu icin onlar temizleniyor
+        $request->session()->flush();
+        return redirect()->route('login.form');
     }
 
     // bu class kayit formunu gosteir 
@@ -59,17 +99,19 @@ class AuthController extends Controller
     {
         Validator::make($request->all(),[
             'name'=>'required',  // name email ve passwordun zorunlu oldigini belirtit
+            'surname'               => 'required', 
             'email'=>'required|email',
             'password'=>'required|min:8|confirmed' // min 8 karakterli olmali ve password_confirmation alani ile eslesmeli 
         ])->validate();
 
-        $validated = $request->only(['name', 'email', 'password']);
+        $validated = $request->only(['name', 'surname','email', 'password']);
 
         // yeni kullanici olsutururken 
         DB::table('users')->insert([
-            'full_name' => $validated['name'],        // formdaki name alanı full_name sutununa kaydedilir
+            'full_name' => $validated['name']. ' ' . $validated['surname'],        // formdaki name alanı full_name sutununa kaydedilir
             'email'     => $validated['email'],       // formdaki email alanı email sutununa kaydedilir
             'password'  => Hash::make($validated['password']), // plain password bcrypt ile hash'lenir
+            'user_type_id'  => 1,       ////// yeni kayıtta default müşteri tipi (1) atandı
             'created_at'=> Carbon::now(),
             'updated_at'=> Carbon::now(),
         ]);
@@ -147,3 +189,4 @@ class AuthController extends Controller
         return redirect()->route('login.form')->with('success','Şifreniz başarıyla güncellendi.');
     }
 }
+

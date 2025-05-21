@@ -47,6 +47,13 @@
             </div>
               <button type="submit" class="btn btn-primary">Login</button>
         </form> <!-- button ile gonderim yapilir--> 
+   
+
+           <!-- Reset password kismi-->
+                
+        <p class="mt-2">
+            <a href="{{ route('password.request') }}">Forgot your password?</a>
+        </p>
 
           <p class="form-group">Don’t have an account?
         <a href="{{ route('register.form') }}">Register here</a>

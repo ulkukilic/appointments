@@ -29,6 +29,22 @@
      {{old('name')}} ise 
      name="name" $reqire->input('name')  yaparken cagrim yapilmasi icin isimlendirilmistir -->
 </div>
+
+        <div class="form-group">
+                <label for="surname">Last Name</label>
+                <input type="text" id="surname" name="surname"
+                       class="form-control"
+                       value="{{ old('surname') }}" required>
+            </div>
+        
+
+             <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email"
+                       class="form-control"
+                       value="{{ old('email') }}" required>
+            </div>
+
     <div class="form-group">
         <label for="password"> Password </label>
         <input
