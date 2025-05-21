@@ -1,3 +1,4 @@
+@include('layouts.header')
 <form method="POST" action="{{ route('password.reset') }}">
     @csrf
 

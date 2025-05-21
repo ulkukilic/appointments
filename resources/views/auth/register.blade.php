@@ -1,13 +1,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register Page</title>
-     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-<!--   css dosyasinin konumu belirtlendi HTML DE  "href=style.css" oldugu gibi-->
-</head>
+@include('layouts.header')
 <body>
     <div class="container" >  <!--  kullanici kayit ol formunu gorucek -->
         <h1> Please Register </h1>
