@@ -52,3 +52,5 @@ Route::get('/dash/superadmin', function () {
  ->middleware('userType:3');   
   /// baska kullaninin yetkisi olmayana url ile girmesin diye
 
+Route::get('/categories/{category}', [BookingController::class,'showCategory'])
+     ->name('categories.show');

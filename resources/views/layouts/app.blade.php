@@ -26,6 +26,7 @@
    <!--olasi bir hatayi gosteriyor -->
   @include('layouts.alerts')
 
+  
   <main class="container mt-4">
   <!-- sayfanin basligi-->
     <h1>@yield('page_title')</h1>

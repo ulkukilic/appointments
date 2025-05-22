@@ -18,6 +18,17 @@ color: #223143;
     color: #353434;
     background-color: rgba(22, 22, 22, 0.15);
 }
+/* Kart görselleri için sabit yükseklik, kırpma ve tam sığdırma */
+.card-img-top {
+  height: 200px;         /* Tüm görseller 200px yüksekliğinde */
+  object-fit: cover;     /* Taşan kısımları kırpar, tüm alanı kaplar */
+}
+
+/* Kartın sabit genişlik/yükseklik minima */
+.card.h-100 {
+  min-height: 350px;     /* Görsel + başlık + padding dahil yaklaşık kart yüksekliği */
+}
+
 @media only screen and (min-width: 992px) {
     .is-folded .logo .logo-fold {
         width: 65px;
