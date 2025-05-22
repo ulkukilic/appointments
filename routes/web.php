@@ -51,3 +51,9 @@ Route::get('/dash/superadmin', function () {
 ->name('dash.superadmin')
  ->middleware('userType:3');   
   /// baska kullaninin yetkisi olmayana url ile girmesin diye
+
+
+Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])
+     ->name('password.request');
+Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+     ->name('password.email');
