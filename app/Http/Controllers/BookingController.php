@@ -14,7 +14,22 @@ use Carbon\Carbon;                           // Tarih/saat işlemleri için
 use App\Mail\ResetPasswordMail;              // Şifre sıfırlama postası  
 
 class BookingController extends Controller
+
 {
+    public function update(Request $request, $company_uni_id)
+    {
+    
+    if (Auth::user()->company_uni_id != $company_uni_id) {
+        abort(403);
+    }
+
+    // Güncelleme sorgusu
+    DB::table('companies')->where('company_uni_id', $company_uni_id)
+      ->update($request->only(['name','address','phone_number','description']));
+
+    return back()->with('success','Company updated.');
+     }
+
     // Kategori seçildiğinde o kategoriyi listelemek için kullanılacak fonksiyon  
     public function showCategory($category)
     {

@@ -59,3 +59,9 @@ Route::get('/categories/{category}', [BookingController::class, 'showCategory'])
 // 2) Bir şirket tıklandığında müsaitliklerini gösterecek
 Route::get('/categories/{category}/companies/{company}', [BookingController::class, 'showCompanyAvailability'])
      ->name('categories.company.availability');
+
+  //admin icin 
+Route::post(
+    '/admin/companies/{company_uni_id}/update',
+    [BookingController::class, 'updateCompany']
+)->name('admin.companies.update');

@@ -15,6 +15,7 @@ use App\Mail\ResetPasswordMail;              // Mail sınıfı
 
 class AuthController extends Controller
 {
+    
     /** Giris formunu gosterir */
     public function showLoginForm()
     {
