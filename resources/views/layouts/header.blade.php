@@ -1,22 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Login Page')</title>
 
-    {{-- 1️⃣ Bootstrap grid + temel stiller --}}
-    <link href="{{ asset('panel/assets/vendors/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet"> 
-
-    {{-- 2️⃣ Panel’in kendi app.css’i --}}
-    <link href="{{ asset('panel/assets/css/app.css?v=0.0.1') }}" rel="stylesheet"> 
-
-    {{-- 3️⃣ Custom overrides --}}
-    <link href="{{ asset('panel/assets/css/style.css?v=0.0.3') }}" rel="stylesheet"> 
-</head>
-<body>
-  <div class="container mt-4">
-    @yield('content')  
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="{{ route('login.form') }}">
+ 
+  </a>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav ml-auto">
+      @auth
+        <li class="nav-item"><a class="nav-link" href="{{ route('dash.customer') }}">Customer</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('dash.admin') }}">Admin</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('dash.superadmin') }}">Superadmin</a></li>
+        <li class="nav-item">
+          <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button class="btn btn-link nav-link">Logout</button>
+          </form>
+        </li>
+      @else
+        <li class="nav-item"><a class="nav-link" href="{{ route('login.form') }}">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ route('register.form') }}">Register</a></li>
+      @endauth
+    </ul>
   </div>
-  </body>
-</html>
+</nav>

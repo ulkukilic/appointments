@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;         // Auth işlemleri için
+use App\Http\Controllers\ForgotPasswordController;
 use Illuminate\Support\Facades\Hash;         // Şifreleri hash’lemek ve doğrulamak için
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
@@ -119,7 +120,7 @@ class AuthController extends Controller
         // kayit sonrasi login sayfasina yonlendirr 
         return redirect()
             ->route('login.form')  // routes/web.php de tanimli login rotasina gonderir
-            ->with('Success','Please Enter Login');
+            ->with('success','Please Enter Login');
     }
 
     // Sifre sifirlama linkini istedigimiz formu gosterir

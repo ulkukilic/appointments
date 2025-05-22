@@ -1,8 +1,8 @@
+@extends('layouts.app')
 
-@extends('layouts.header')
+@section('title', 'Customer Dashboard')
+@section('page_title', 'Welcome {{ session('full_name')}} !')
 
 @section('content')
-    <h2>Welcome Customer, {{ session('full_name') }} </h2>
-  
-  
-    @endsection
+  <p></p>
+@endsection

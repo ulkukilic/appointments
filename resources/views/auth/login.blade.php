@@ -1,63 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-@include('layouts.header')
+@extends('layouts.app')
 
-<body>
-      <div class="container">
-        <h1>Please Login</h1>
-         @if(session('success')) <!--  eger basarili bir sekilde regoster yapilip donduryse kayit basarili mesajini alir-->
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+@section('title', 'Login')
+@section('page_title', 'Please Login')
 
-         @if ($errors->any()) <!--eger sayfanin acilisinda any() herhangi bir hata olursa hata mesaji dondurur  -->
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $msg)
-                        <li>{{ $msg }}</li> <!-- ve bu hata mesajini listeli bir sekilde yazdirir -->
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-        <form method="POST" action="{{ route('login.submit') }}">
-         <!--Post ile sbasitirilcak degerleri  body icinde gonderir URL de login.submit gpuzkur-->
-           @csrf
+@section('content')
+    <!-- eger basarili bir sekilde regoster yapilip donduryse kayit basarili mesajini alir -->
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-            <div class="form-group">  <!-- grup yapar ve duzenlemerli kolaylastirir-->
-                <label for="email">Email</label>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    class="form-control"
-                    value="{{ old('email') }}"
-                    required 
-                >
-                   <!-- old onceki gonderide input degerli alir ve kullanici girisi kaybolmaz -->
-            
-                </div>
-                 <div class="form-group">
-                <label for="password">Password</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    class="form-control"
-                    required
-                >
-            </div>
-              <button type="submit" class="btn btn-primary">Login</button>
-        </form> <!-- button ile gonderim yapilir--> 
-   
+    <!-- eger sayfanin acilisinda any() herhangi bir hata olursa hata mesaji dondurur -->
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $msg)
+                    <li>{{ $msg }}</li> <!-- ve bu hata mesajini listeli bir sekilde yazdirir -->
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-           <!-- Reset password kismi-->
-                
-        <p class="mt-2">
-            <a href="{{ route('password.request') }}">Forgot your password?</a>
-        </p>
+    <form method="POST" action="{{ route('login.submit') }}">
+        <!-- Post ile sabitlencek degerleri body icinde gonderir, URL de login.submit gozukecek -->
+        @csrf
 
-          <p class="form-group">Don’t have an account?
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-control"
+                value="{{ old('email') }}"
+                required
+            > 
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                class="form-control"
+                required
+            >
+        </div>
+
+        <button type="submit" class="btn btn-primary">Login</button>
+    </form>
+
+    {{-- Reset password kismi --}}
+    <p class="mt-2">
+        <a href="{{ route('password.request') }}">Forgot your password?</a>
+    </p>
+
+    <p class="form-group">
+        Don’t have an account?
         <a href="{{ route('register.form') }}">Register here</a>
-        </p> <!--eger bir hesabi yoksa direk web.php den gelen register.form sayfasina  yonlendirme yapilmaktadir -->
-      </div>
-    </body>
-</html>
+    </p> 
+@endsection
