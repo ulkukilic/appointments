@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
-
+use App\Http\Controllers\BookingController;
 
 Route::get('/', function () {
     return view('auth.login');
@@ -52,5 +52,10 @@ Route::get('/dash/superadmin', function () {
  ->middleware('userType:3');   
   /// baska kullaninin yetkisi olmayana url ile girmesin diye
 
-Route::get('/categories/{category}', [BookingController::class,'showCategory'])
+// 1) Kategoriye tıklayınca şirket listesini gösterecek
+Route::get('/categories/{category}', [BookingController::class, 'showCategory'])
      ->name('categories.show');
+
+// 2) Bir şirket tıklandığında müsaitliklerini gösterecek
+Route::get('/categories/{category}/companies/{company}', [BookingController::class, 'showCompanyAvailability'])
+     ->name('categories.company.availability');

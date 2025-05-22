@@ -18,15 +18,25 @@ color: #223143;
     color: #353434;
     background-color: rgba(22, 22, 22, 0.15);
 }
-/* Kart görselleri için sabit yükseklik, kırpma ve tam sığdırma */
+/* Kart görselleri için sabit yükseklik ve tam genişlik */
 .card-img-top {
-  height: 200px;         /* Tüm görseller 200px yüksekliğinde */
-  object-fit: cover;     /* Taşan kısımları kırpar, tüm alanı kaplar */
+  width: 100%;            /* Görsel her zaman kart genişliğini kaplasın */
+  height: 200px;          /* Tüm görseller 200px yüksekliğinde */
+  object-fit: cover;      /* Taşan kısımları kırpar, tüm alanı kaplar */
+  object-position: center;/* Görselin ortasını crop et */
 }
 
-/* Kartın sabit genişlik/yükseklik minima */
+/*  Kartın toplam yüksekliğini de tutarlı kılmak için */
 .card.h-100 {
-  min-height: 350px;     /* Görsel + başlık + padding dahil yaklaşık kart yüksekliği */
+  min-height: 300px;      /* Görsel + gövde içeriği + padding için yeterli alan */
+  display: flex;
+  flex-direction: column;
+}
+.card.h-100 .card-body {
+  flex-grow: 1;           /* Kart-body içeriği esneyip footer’ı alta iter */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media only screen and (min-width: 992px) {

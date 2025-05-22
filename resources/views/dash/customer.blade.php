@@ -12,14 +12,16 @@
     
       $categories = [
         'hospital'   => ['Hospital',     'hospital.jpg'],
+        'dentist'    => ['Dentist',      'dentist.jpg'], 
+        'pharmacy'     => ['Pharmacy',      'pharmacy.jpg'], 
+        'vet'          => ['Veterinary',    'vet.jpg'],   
         'hair-salon' => ['Hair Salon',   'hair-salon.jpg'],
         'barber'     => ['Barber',       'berber.jpg'],   
-        'dentist'    => ['Dentist',      'dentist.jpg'], 
+        'restaurant'   => ['Restaurant',    'restaurant.jpg'], 
         'cafe'       => ['Cafe',         'cafe.jpg'],   
-        'gym'          => ['Gym',           'gym.jpg'],           
-        'pharmacy'     => ['Pharmacy',      'pharmacy.jpg'],      
-        'vet'          => ['Veterinary',    'vet.jpg'],           
-        'restaurant'   => ['Restaurant',    'restaurant.jpg'],    
+        'gym'          => ['Gym',           'gym.jpg'],            
+                
+           
       ];
     @endphp
     
