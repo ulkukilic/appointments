@@ -60,49 +60,28 @@ class BookingController extends Controller
                        ->where('company_uni_id', $companyUniId)
                        ->get();
 
-        // Her personel için müsaitlik desenlerini bul ve 30 günlük slot listesi oluştur
-        $staffData = $staffList->map(function($s) use($startDate, $days) {
-            // weekly_availability tablosundan, personelin haftalık çalışma desenlerini al
-            $patterns = DB::table('weekly_availability')
-                          ->where('staff_member_uni_id', $s->staff_member_uni_id)
-                          ->get();
-
-            // Oluşturulacak slotları depolamak için boş bir dizi oluşturacak
-            $slots = collect();
-
-            // 0’dan $days-1’e kadar dönerek her gün için
-            for ($i = 0; $i < $days; $i++) {
-                $date = $startDate->copy()->addDays($i);
-                $wday = $date->dayOfWeek; // 0=Sunday, …, 6=Saturday
-
-                // O güne denk gelen tüm weekly_availability satırları için
-                foreach ($patterns as $p) {
-                    if ($p->weekday == $wday) {
-                        // Uygun günlük slotu ekle
-                        $slots->push([
-                            'start_time' => $date->format('Y-m-d').' '.$p->start_time,
-                            'end_time'   => $date->format('Y-m-d').' '.$p->end_time,
-                        ]);
-                    }
-                }
-                
-            }
-
-            // Her personel için hem personel hem de slot bilgisini döndür
+        // SQL'den availability_slots tablosundan her personele ait uygun zamanları getir
+        $staffData = $staffList->map(function($s) {
+             // Personelin uygun olan, geleceğe dönük slotlarını çekiyoruz
+            $slots = DB::table('availability_slots')
+                ->where('staff_member_uni_id', $s->staff_member_uni_id)
+                ->where('status', 'available')
+                ->where('start_time', '>=', now())
+                ->orderBy('start_time')
+                ->get();
+               // Slotlar ve personel bilgisi birlikte döndürülür
             return [
                 'staff' => $s,
                 'slots' => $slots
             ];
         });
-
-        // company_services tablosuyla join yaparak o şirkete ait hizmetleri al
-        $services = DB::table('company_services as cs')
+          // Şirkete ait hizmetler: services ve company_services join ile getirilir
+             $services = DB::table('company_services as cs')
                       ->join('services as s', 'cs.service_id', '=', 's.service_id')
                       ->where('cs.company_uni_id', $companyUniId)
                       ->select('s.*')
                       ->get();
-
-        // categories.availability blade’ine tüm verileri yolla
+           // kategori, şirket, personeller ve hizmetler
         return view('categories.availability', [
             'category'   => $category,
             'company'    => $company,
@@ -111,6 +90,7 @@ class BookingController extends Controller
             'days'       => $days
         ]);
     }
+            
      public function book(Request $request)
     {
         //  musteri randevusu icin gelen istegi dogrulamali slot_id ile service_id integer olmali
@@ -124,10 +104,13 @@ class BookingController extends Controller
 
         // Seçilen slot hâlâ müsait mi kontrol et  ve baslasi almasin diye al
         $slot = DB::table('availability_slots')
-            ->where('slot_id', $request->slot_id)
-            ->where('status', 'available')
-            ->lockForUpdate()
-            ->first();
+         ->join('staff_members', 'availability_slots.staff_member_uni_id', '=', 'staff_members.staff_member_uni_id')
+        ->where('availability_slots.slot_id', $request->slot_id)
+        ->where('availability_slots.status', 'available')
+        ->select('availability_slots.*', 'staff_members.company_uni_id') // company_uni_id'yi al
+        ->lockForUpdate()
+        ->first();
+
 
         if (! $slot) {
             // senden once baskasi aldiysa artik musait degil yaziis gorur

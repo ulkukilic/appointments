@@ -118,3 +118,5 @@ Route::middleware('userType:2')->group(function() {
          ->name('admin.appointments');
     Route::post('/admin/appointments/{id}', [BookingController::class, 'updateStatus'])
          ->name('admin.appointments.update');
+
+         Route::post('/appointment/book', [BookingController::class, 'book'])->name('appointment.book');

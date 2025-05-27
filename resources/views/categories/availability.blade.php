@@ -32,11 +32,27 @@
             @foreach($entry['slots'] as $slot)
               <li>
                 <!-- Başlangıç ve bitiş zamanını biçimlendir -->
-                {{ \Carbon\Carbon::parse($slot['start_time'])->format('d M Y H:i') }}
-                —
-                {{ \Carbon\Carbon::parse($slot['end_time'])->format('H:i') }}
-                <!-- Randevu alma butonu -->
-                <a href="#" class="btn btn-sm btn-primary ms-2">Randevu Al</a>
+               {{ \Carbon\Carbon::parse($slot->start_time)->format('d M Y H:i') }}
+             
+                 {{ \Carbon\Carbon::parse($slot->end_time)->format('H:i') }}
+
+                        <!-- randevu formu-->
+                <form method="POST" action="{{ route('appointment.book') }}" class="d-inline-block ms-2">
+                @csrf
+                <input type="hidden" name="slot_id" value="{{ $slot->slot_id }}">
+
+                  <!-- Hizmet Seçimi -->
+                  <select name="service_id" required class="form-select form-select-sm d-inline-block w-auto">
+                  @foreach($services as $svc)
+                    <option value="{{ $svc->service_id }}">{{ $svc->name }}</option>
+                  @endforeach
+                 </select>
+
+
+                  <button type="submit" class="btn btn-sm btn-success">Randevu Al</button>
+                </form>
+                
+
               </li>
             @endforeach
           </ul>
@@ -45,3 +61,4 @@
     </div>
   @endforeach
 @endsection
+              
