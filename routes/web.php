@@ -91,8 +91,30 @@ Route::delete('/superadmin/company/{id}', [BookingController::class, 'deleteComp
 // Superadmin -> Kullanıcı silme
 Route::delete('/superadmin/user/{id}', [BookingController::class, 'deleteUser'])
     ->name('superadmin.user.delete');
+
+    Route::middleware('userType:3')->group(function(){
+    // Şirket düzenleme formu superadmin
+    Route::get(
+        '/superadmin/company/{id}/edit',
+        [BookingController::class, 'editCompany']
+    )
+    ->name('superadminCompanyEdit');
+
+    // Düzenlemeyi kaydetme
+    Route::put(
+        '/superadmin/company/{id}',
+        [BookingController::class, 'updateCompanyBySuperadmin']
+    )
+    ->name('superadmin.company.update');
+});
 // Admin çalışan yönetimi (userType:2)
 Route::middleware('userType:2')->group(function() {
     Route::post('/admin/staff/add', [BookingController::class, 'addStaff'])->name('admin.staff.add');
     Route::delete('/admin/staff/{id}/delete', [BookingController::class, 'deleteStaff'])->name('admin.staff.delete');
 });
+
+//Admin: Randevu yönetimi – sadece kendi şirkete ait randevular //////
+    Route::get('/admin/appointments', [BookingController::class, 'adminAppointments'])
+         ->name('admin.appointments');
+    Route::post('/admin/appointments/{id}', [BookingController::class, 'updateStatus'])
+         ->name('admin.appointments.update');

@@ -34,7 +34,7 @@
           <td>{{ $c->email }}</td>
           <td>
             <!-- Düzenle butonu: Şirket bilgilerini güncelleme sayfasına yönlendirir -->
-            <a href="{{ route('admin.companies.edit', $c->company_uni_id) }}" class="btn btn-sm btn-warning">Düzenle</a>
+            <a href="{{ route('superadminCompanyEdit', $c->company_uni_id) }}" class="btn btn-sm btn-warning">Düzenle</a>
             <!-- Silme formu: Şirket kaydını silme işlemi yapar -->
             <form method="POST" action="{{ route('superadmin.company.delete', $c->company_uni_id) }}" style="display:inline-block">
               @csrf

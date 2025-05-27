@@ -164,22 +164,7 @@ class BookingController extends Controller
                          ->with('success', 'Randevu isteğiniz başarıyla alındı.');
     }
 
-    /**
-     *Admin için randevu listesini gösterme (Admin paneli)
-     */
-    public function adminAppointments()
-    {
-        // Şirketine ait tüm randevuları kullanıcı bilgisiyle birlikte çek
-        $list = DB::table('appointments as a')
-            ->join('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')
-            ->where('a.company_uni_id', Auth::user()->company_uni_id)
-            ->select('a.*', 'u.full_name', 'u.email')
-            ->orderBy('a.created_at', 'desc')
-            ->get();
-
-        // dash.admin-appointments blade'ine gönder
-        return view('dash.adminAppointments', compact('list'));
-    }
+     
                 // Şirket silme işlemi (Superadmin)
         public function deleteCompany($companyId)
        {
@@ -197,26 +182,95 @@ class BookingController extends Controller
 
             return back()->with('success', 'Kullanıcı başarıyla silindi.');
         }  
-        // Yeni çalışan ekleme (admin)
-public function addStaff(Request $request)
-{
-    DB::table('staff_members')->insert([
-        'company_uni_id' => Auth::user()->company_uni_id,
-        'full_name' => $request->input('full_name'),
-        'experience_level' => $request->input('experience_level'),
-        'created_at' => now(),
-    ]);
+    
+// Admin: Şirkete ait personel listesini getir 
+    public function listStaff()
+    {
+        // Yalnızca kendi şirketinin personelini döner
+        $companyId = Auth::user()->company_uni_id;     // şirket sahibi olduğumuzu bu alandan anlarız
+        $staff = DB::table('staff_members')
+                   ->where('company_uni_id', $companyId)
+                   ->get();
 
-    return back()->with('success', 'Çalışan başarıyla eklendi.');
-}
+        return view('dash.admin-staff', compact('staff'));
+    }
+       public function addStaff(Request $request)
+    {
+        $request->validate([
+            'full_name'        => 'required|string',
+            'experience_level' => 'required|string',
+        ]);
+        // Admin: sadece kendi şirketine personel ekle \
+        DB::table('staff_members')->insert([
+            'company_uni_id'    => Auth::user()->company_uni_id,
+            'full_name'         => $request->full_name,
+            'experience_level'  => $request->experience_level,
+            'created_at'        => now(),
+        ]);
+        
+        return back()->with('success','Çalışan eklendi.');
+    }
+    
+    public function deleteStaff($id)
+    {
+        // Admin: sadece kendi şirketinin personelini sil 
+        DB::table('staff_members')
+          ->where('staff_member_uni_id', $id)
+          ->where('company_uni_id', Auth::user()->company_uni_id)
+          ->delete();
+            return back()->with('success','Çalışan silindi.');
+    }
+      public function adminAppointments()
+    {
+        // Admin: sadece kendi şirkete ait randevuları listele 
+        $list = DB::table('appointments as a')
+            ->join('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')
+            ->where('a.company_uni_id', Auth::user()->company_uni_id)
+            ->select('a.*','u.full_name','u.email')
+            ->orderBy('a.created_at','desc')
+            ->get();
+             
+        return view('dash.adminAppointments', compact('list'));
+    }
 
-// Çalışan silme (admin)
-public function deleteStaff($id)
-{
-    DB::table('staff_members')->where('staff_member_uni_id', $id)->delete();
-    return back()->with('success', 'Çalışan silindi.');
-}
+    public function updateStatus(Request $r, $id)
+    {
+        $r->validate(['status'=>'required|in:pending,confirmed,cancelled']);
 
+        // Admin: sadece kendi şirkete ait randevuya dokun 
+        $updated = DB::table('appointments')
+            ->where('appointment_id', $id)
+            ->where('company_uni_id', Auth::user()->company_uni_id)
+            ->update(['status'=>$r->status]);
+             if ($updated) {
+            // Mail gönderirken Auth::user()->email kullanırsın
+            Mail::to($r->email)->send(new AppointmentStatusMail($id,$r->status));
+        }
+
+        return back()->with('success','Durum güncellendi.');
+    }
+ /**
+     * Superadmin – şirket düzenleme formu
+     */
+    public function editCompany($companyId)
+    {
+        $company = DB::table('companies')
+                     ->where('company_uni_id', $companyId)
+                     ->first();
+        return view('dash.superadminCompanyEdit', compact('company'));
+    }
+
+    /**
+     * Superadmin – düzenlemeyi kaydet
+     */
+    public function updateCompanyBySuperadmin(Request $request, $companyId)
+    {
+        DB::table('companies')
+          ->where('company_uni_id', $companyId)
+          ->update($request->only(['name','address','phone_number','description']));
+
+        return back()->with('success', 'Şirket başarıyla güncellendi.');
+    }
 }
 
 

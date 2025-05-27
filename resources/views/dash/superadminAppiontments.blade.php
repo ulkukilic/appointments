@@ -1,4 +1,4 @@
-@extens('layouts.app')
+@extends('layouts.app')
 @section('title','SuperAdmin Appointment Management')
 @section('page_title', 'Appointment List')
 @section ('content')
