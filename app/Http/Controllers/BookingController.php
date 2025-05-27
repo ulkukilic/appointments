@@ -180,9 +180,10 @@ class BookingController extends Controller
 
         // Transaction onayla
         DB::commit();
-
+ 
+             
         // Müşteriye onay e-postası gönder
-        Mail::to(Auth::user()->email)
+        Mail::to(session('email'))
              ->send(new AppointmentRequestedMail($appointmentId));
         // Müşteri paneline yönlendir ve başarı mesajı göster
         return redirect()->route('dash.customer')

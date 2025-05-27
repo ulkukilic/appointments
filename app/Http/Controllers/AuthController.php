@@ -41,7 +41,7 @@ class AuthController extends Controller
                    'user_type_id'   => $user->user_type_id,
                    'full_name'      => $user->full_name,
                    'email'          => $user->email,
-                   'company_uni_id' => $user->company_uni_id,
+                   'company_uni_id' =>  property_exists($user, 'company_uni_id') ? $user->company_uni_id : null,
                 ]);
 
                   // password dogru ve bilgilerde eslesme varsa o zaman user_type devreye giriyor ve logindan sonra gonderilmesi gereken panel sayfasina yonlendiriyor
