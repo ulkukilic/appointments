@@ -37,10 +37,11 @@ class AuthController extends Controller
              if($user && Hash::check($request->password,$user->password))
              {//sifre kontrolu yapiliyor ve icerisinde ki degerler user tablosundaki degerlere bakiyor
                 session([
-                    'user_uni_id' => $user->user_uni_id,
-                    'user_type_id'=>$user-> user_type_id,
-                    'full_name'=>$user->full_name,
-                    'email'=>$user->email,
+                   'user_uni_id'    => $user->user_uni_id,
+                   'user_type_id'   => $user->user_type_id,
+                   'full_name'      => $user->full_name,
+                   'email'          => $user->email,
+                   'company_uni_id' => $user->company_uni_id,
                 ]);
 
                   // password dogru ve bilgilerde eslesme varsa o zaman user_type devreye giriyor ve logindan sonra gonderilmesi gereken panel sayfasina yonlendiriyor

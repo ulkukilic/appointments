@@ -22,6 +22,6 @@ class WelcomeMail extends Mailable
         return $this
             ->from(config('mail.from.address'), config('mail.from.name'))
             ->subject(' Hoş Geldin!')
-            ->markdown('emails.welcome');
+            ->markdown('emails.welcome', ['user' => $this->user]);
     }
 }

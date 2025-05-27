@@ -26,7 +26,7 @@
       <div class="col-6 col-md-4 col-lg-3">
         <div class="card h-100">
           <!-- Yönetici kategori kartı; tıklayınca kategori detay yönetim sayfasına gider -->
-          <a href="{{ route('admin.categories.show', $slug) }}">
+           <a href="{{ route('admin.categories.index') }}">
             <img
               src="{{ asset('panel/assets/images/' . $img) }}"
               class="card-img-top"
@@ -35,7 +35,7 @@
           </a>
           <div class="card-body text-center">
             <a
-              href="{{ route('admin.categories.show', $slug) }}"
+              href="{{ route ('admin.categories.index')  }}"
               class="stretched-link text-decoration-none text-dark"
             >
               <h5 class="card-title">{{ $label }}</h5>
@@ -53,21 +53,12 @@
           Manage All Appointments
         </a>
       </li>
-      <li class="list-group-item">
-        <a href="{{ route('admin.categories.index') }}" class="text-decoration-none">
-          Manage Categories
-        </a>
-      </li>
-      <li class="list-group-item">
-        <a href="{{ route('admin.staff.index') }}" class="text-decoration-none">
-          Manage Staff Members
-        </a>
-      </li>
-      <li class="list-group-item">
-        <a href="{{ route('admin.services.index') }}" class="text-decoration-none">
-          Manage Services
-        </a>
-      </li>
+         <li class="list-group-item">
+      <a href="{{ route('admin.staff.index') }}" class="text-decoration-none">
+        Manage Staff Members
+      </a>
+    </li>
+      
     </ul>
   </div>
 @endsection
