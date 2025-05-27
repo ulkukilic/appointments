@@ -14,6 +14,7 @@ use Carbon\Carbon;                           // Tarih/saat işlemleri için
 use App\Mail\ResetPasswordMail;              // Şifre sıfırlama postası
 use App\Mail\AppointmentRequestedMail;
 
+
 class BookingController extends Controller
 {
     /**
