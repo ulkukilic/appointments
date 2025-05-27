@@ -18,12 +18,12 @@ class BookingController extends Controller
 {
     public function update(Request $request, $company_uni_id)
     {
-    
+    // yanliz kendi sirketini guncelleyebilir admin
     if (Auth::user()->company_uni_id != $company_uni_id) {
-        abort(403);
+        abort(403);// hata sayfasina yonlenriiyor erisimi olmayanlari
     }
 
-    // Güncelleme sorgusu
+    // Guncelleme yapilmis bilgileri almak ve guncellemek icin 
     DB::table('companies')->where('company_uni_id', $company_uni_id)
       ->update($request->only(['name','address','phone_number','description']));
 
@@ -85,6 +85,7 @@ class BookingController extends Controller
                         ]);
                     }
                 }
+                
             }
 
             // Her personel için hem personel hem de slot bilgisini döndür
@@ -110,4 +111,113 @@ class BookingController extends Controller
             'days'       => $days
         ]);
     }
+     public function book(Request $request)
+    {
+        //  musteri randevusu icin gelen istegi dogrulamali slot_id ile service_id integer olmali
+        $request->validate([
+            'slot_id'    => 'required|integer',
+            'service_id' => 'required|integer',
+        ]);
+
+        
+        DB::beginTransaction();
+
+        // Seçilen slot hâlâ müsait mi kontrol et  ve baslasi almasin diye al
+        $slot = DB::table('availability_slots')
+            ->where('slot_id', $request->slot_id)
+            ->where('status', 'available')
+            ->lockForUpdate()
+            ->first();
+
+        if (! $slot) {
+            // senden once baskasi aldiysa artik musait degil yaziis gorur
+            DB::rollBack();
+            return back()->with('error', 'Seçilen slot artık müsait değil.');
+        }
+
+        // 4) Slot durumunu booked olarak güncelle
+        DB::table('availability_slots')
+            ->where('slot_id', $request->slot_id)
+            ->update(['status' => 'booked']);
+
+        // 5) appointments tablosuna randevu kaydı ekle
+        $appointmentId = DB::table('appointments')->insertGetId([
+            'user_uni_id'          => Auth::id(),
+            'staff_member_uni_id'  => $slot->staff_member_uni_id,
+            'company_uni_id'       => $slot->company_uni_id,
+            'service_id'           => $request->service_id,
+            'slot_id'              => $request->slot_id,
+            'scheduled_time'       => $slot->start_time,
+            'status'               => 'pending', // beklemede
+            'created_at'           => now(),
+        ]);
+
+        //  Transaction onayla
+        DB::commit();
+
+        //  Müşteriye onay e-postası gönder
+        Mail::to(Auth::user()->email)
+            ->send(new AppointmentRequestedMail($appointmentId));
+
+        //  Müşteri paneline yönlendir ve başarı mesajı göster
+        return redirect()->route('dash.customer')
+                         ->with('success', 'Randevu isteğiniz başarıyla alındı.');
+    }
+
+    /**
+     *Admin için randevu listesini gösterme (Admin paneli)
+     */
+    public function adminAppointments()
+    {
+        // Şirketine ait tüm randevuları kullanıcı bilgisiyle birlikte çek
+        $list = DB::table('appointments as a')
+            ->join('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')
+            ->where('a.company_uni_id', Auth::user()->company_uni_id)
+            ->select('a.*', 'u.full_name', 'u.email')
+            ->orderBy('a.created_at', 'desc')
+            ->get();
+
+        // dash.admin-appointments blade'ine gönder
+        return view('dash.adminAppointments', compact('list'));
+    }
+                // Şirket silme işlemi (Superadmin)
+        public function deleteCompany($companyId)
+       {
+       // Şirket varsa sil
+        DB::table('companies')->where('company_uni_id', $companyId)->delete();
+
+        return back()->with('success', 'Şirket başarıyla silindi.');
+        }
+
+      // Kullanıcı silme işlemi (Superadmin)
+      public function deleteUser($userId)
+       {
+             // Kullanıcı varsa sil
+          DB::table('users')->where('user_uni_id', $userId)->delete();
+
+            return back()->with('success', 'Kullanıcı başarıyla silindi.');
+        }  
+        // Yeni çalışan ekleme (admin)
+public function addStaff(Request $request)
+{
+    DB::table('staff_members')->insert([
+        'company_uni_id' => Auth::user()->company_uni_id,
+        'full_name' => $request->input('full_name'),
+        'experience_level' => $request->input('experience_level'),
+        'created_at' => now(),
+    ]);
+
+    return back()->with('success', 'Çalışan başarıyla eklendi.');
 }
+
+// Çalışan silme (admin)
+public function deleteStaff($id)
+{
+    DB::table('staff_members')->where('staff_member_uni_id', $id)->delete();
+    return back()->with('success', 'Çalışan silindi.');
+}
+
+}
+
+
+

@@ -52,16 +52,47 @@ Route::get('/dash/superadmin', function () {
  ->middleware('userType:3');   
   /// baska kullaninin yetkisi olmayana url ile girmesin diye
 
-// 1) Kategoriye tıklayınca şirket listesini gösterecek
+//  Kategoriye tıklayınca şirket listesini gösterecek
 Route::get('/categories/{category}', [BookingController::class, 'showCategory'])
      ->name('categories.show');
 
-// 2) Bir şirket tıklandığında müsaitliklerini gösterecek
+//  Bir şirket tıklandığında müsaitliklerini gösterecek
 Route::get('/categories/{category}/companies/{company}', [BookingController::class, 'showCompanyAvailability'])
      ->name('categories.company.availability');
 
-  //admin icin 
+  //admin icin sirketi update edebilmesi icin
 Route::post(
     '/admin/companies/{company_uni_id}/update',
     [BookingController::class, 'updateCompany']
 )->name('admin.companies.update');
+
+Route::middleware('userType:2')->group(function(){
+    // Randevu listesini görüntüle
+    Route::get('/admin/appointments', [BookingController::class,'adminAppointments'])
+         ->name('adminAppointments');
+    // Randevu durumunu güncelle
+    Route::post('/admin/appointments/{id}', [BookingController::class,'updateStatus'])
+         ->name('adminAppointments.update');
+});
+
+   // sadece user_type_3 icin tum sirketlerin yonetim routlari
+Route::middleware('userType:3')->group(function(){
+    // Randevu listesini görüntüle (Superadmin tüm şirketler için)
+    Route::get('/superadmin/appointments', [BookingController::class,'adminAppointments'])
+         ->name('superadminApointments');
+    // Randevu durumunu güncelle (Superadmin tüm şirketler için)
+    Route::post('/superadmin/appointments/{id}', [BookingController::class,'updateStatus'])
+         ->name('superadminAppointments.update');
+});
+// Superadmin -> Şirket silme
+Route::delete('/superadmin/company/{id}', [BookingController::class, 'deleteCompany'])
+    ->name('superadmin.company.delete');
+
+// Superadmin -> Kullanıcı silme
+Route::delete('/superadmin/user/{id}', [BookingController::class, 'deleteUser'])
+    ->name('superadmin.user.delete');
+// Admin çalışan yönetimi (userType:2)
+Route::middleware('userType:2')->group(function() {
+    Route::post('/admin/staff/add', [BookingController::class, 'addStaff'])->name('admin.staff.add');
+    Route::delete('/admin/staff/{id}/delete', [BookingController::class, 'deleteStaff'])->name('admin.staff.delete');
+});
