@@ -38,6 +38,11 @@ color: #223143;
   align-items: center;
   justify-content: center;
 }
+.table-light tbody tr:nth-of-type(odd),
+.table-light tbody tr:nth-of-type(even) {
+  background-color: #fff !important;
+  color: #000 !important;
+}
 
 @media only screen and (min-width: 992px) {
     .is-folded .logo .logo-fold {

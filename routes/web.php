@@ -84,7 +84,7 @@ Route::middleware('userType:3')->group(function(){
     Route::delete('/superadmin/company/{id}', [BookingController::class, 'deleteCompany'])
          ->name('superadmin.company.delete');
     Route::get('/superadmin/company/{id}/edit', [BookingController::class, 'editCompany'])
-         ->name('superadmin.company.edit');
+         ->name('superadminCompanyEdit');
     Route::put('/superadmin/company/{id}', [BookingController::class, 'updateCompanyBySuperadmin'])
          ->name('superadmin.company.update');
 
