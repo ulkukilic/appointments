@@ -120,6 +120,7 @@
             <!-- Durum güncelleme formu: Açılır listeden yeni durumu seçip gönderir -->
               <form method="POST" action="{{ route('superadmin.appointments.update', $a->appointment_id) }}" class="d-inline">
               @csrf
+              <input type="hidden" name="email" value="{{isset ( $a->email) ?  $a->emai: ' ' }}" >
               <select name="status" class="form-select form-select-sm d-inline w-auto">
                 <option value="pending"   {{ $a->status === 'pending'   ? 'selected' : '' }}>Beklemede</option>
                 <option value="confirmed" {{ $a->status === 'confirmed' ? 'selected' : '' }}>Onaylandı</option>

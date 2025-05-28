@@ -17,35 +17,43 @@ Route::get('/clrall', function () {
 
 // — AuthController: giriş, kayıt, şifre sıfırlama
     Route::controller(AuthController::class)->group(function () {
-    // Giriş / Ana sayfa
-     Route::get('/', 'showLoginForm')->name('login.form');
-     Route::post('login','login')->name('login.submit');
+          // Giriş / Ana sayfa
+          Route::get('/', 'showLoginForm')->name('login.form');
+          Route::post('login','login')->name('login.submit');
 
-    // Kayıt
-    Route::get('register', 'showRegistrationForm')->name('register.form');
-    Route::post('register', 'registerSave')->name('register.submit');
+          // Kayıt
+          Route::get('register', 'showRegistrationForm')->name('register.form');
+          Route::post('register', 'registerSave')->name('register.submit');
 
-    // Çıkış
-    Route::post('logout', 'logout')->name('logout');
+          // Çıkış
+          Route::post('logout', 'logout')->name('logout');
 
-    // Şifre sıfırlama
-    Route::get('forgot-password', 'showLinkRequestForm')->name('password.request');
-    Route::post('forgot-password', 'sendResetLinkEmail')->name('password.email');
-    Route::get('reset-password/{token}', 'showResetForm')->name('password.reset.form');
-    Route::post('reset-password', 'reset')->name('password.reset');
-});
+          // Şifre sıfırlama
+          Route::get('forgot-password', 'showLinkRequestForm')->name('password.request');
+          Route::post('forgot-password', 'sendResetLinkEmail')->name('password.email');
+          Route::get('reset-password/{token}', 'showResetForm')->name('password.reset.form');
+          Route::post('reset-password', 'reset')->name('password.reset');
+     });
+
+
    //Müşteri, Admin ve Süperadmin Dashboard’ları
     Route::prefix('dash')->group(function () { // prefix ornegin 'dash' yazildi normalde getden sonra hepsi icin dash yazilmasi gerkeiyordu fakat simdi en basa das yazarak onu kisalltik uzun projelerde isine yarayabilir
-    Route::get('customer', fn() => view('dash.customer'))->name('dash.customer')->middleware('userType:1');
-    Route::get('admin', fn() => view('dash.admin'))->name('dash.admin')->middleware('userType:2');
-    Route::get('superadmin', fn() => view('dash.superAdmin'))->name('dash.superadmin')->middleware('userType:3');
-});
+          
+          Route::get('customer', fn() => view('dash.customer'))->name('dash.customer')->middleware('userType:1');
+          Route::get('admin', fn() => view('dash.admin'))->name('dash.admin')->middleware('userType:2');
+          Route::get('superadmin', fn() => view('dash.superAdmin'))->name('dash.superadmin')->middleware('userType:3');
+          
+      });
+
     Route::controller(BookingController::class)->group(function () {
-    Route::get('categories/{category}', 'showCategory')->name('categories.show');
-    Route::get('categories/{category}/companies/{company}', 'showCompanyAvailability')->name('categories.company.availability');
-    Route::post('appointment/book', 'book')->middleware('userType:1')->name('appointment.book'); // Randevu oluşturma (yalnızca müşteri)
-    Route::get('appointment/book', fn() => redirect()->route('dash.customer')); // GET isteği atılırsa müşteri dash'e yönlendir
-});
+
+          Route::get('categories/{category}', 'showCategory')->name('categories.show');
+          Route::get('categories/{category}/companies/{company}', 'showCompanyAvailability')->name('categories.company.availability');
+          Route::post('appointment/book', 'book')->middleware('userType:1')->name('appointment.book'); // Randevu oluşturma (yalnızca müşteri)
+          Route::get('appointment/book', fn() => redirect()->route('dash.customer')); // GET isteği atılırsa müşteri dash'e yönlendir
+
+     });
+
     // — admin rotaları (user_type = 2)
     Route::prefix('admin')->middleware('userType:2')->controller(BookingController::class)->group(function () {   // sadece adminin yapabildigi kontroller
     Route::get('categories', 'adminCategories')->name('admin.categories.index');// Kategori yönetimi
