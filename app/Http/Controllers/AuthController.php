@@ -16,17 +16,17 @@ use App\Mail\ResetPasswordMail;              // Mail sınıfı
 class AuthController extends Controller
 {
     
-    /** Giris formunu gosterir */
-    public function showLoginForm()
+    
+    public function showLoginForm() // giris formunu gosterir
     {
-        return view('auth.login');             // resources/views/auth/login.blade.php
+        return view('auth.login');  // resources/views/auth/login.blade.php
     }
 
-    /** login sayfasindaki POST islemlerini gorur  */
-    public function login(Request $request)
+    
+    public function login(Request $request)// Login sayfasindaki Post islemlerini gorur 
     {
-        // veriler dogrulama islemi gerceklestirilir 
-        $credentials = $request->validate([
+        
+        $credentials = $request->validate([  // veriler dogrulama islemi gerceklestirilir 
             'email'    => 'required|email',
             'password' => 'required',
         ]);
@@ -34,8 +34,8 @@ class AuthController extends Controller
              ->Where('email',$request->email)
              ->first(); // burda users tablosunda kaydi cekiyoruz
              
-             if($user && Hash::check($request->password,$user->password))
-             {//sifre kontrolu yapiliyor ve icerisinde ki degerler user tablosundaki degerlere bakiyor
+             if($user && Hash::check($request->password,$user->password)) //sifre kontrolu yapiliyor ve icerisinde ki degerler user tablosundaki degerlere bakiyor
+             {
                 session([
                    'user_uni_id'    => $user->user_uni_id,
                    'user_type_id'   => $user->user_type_id,
@@ -60,7 +60,7 @@ class AuthController extends Controller
         }
 
         return back()
-            ->withErrors(['email' => 'E-posta veya şifre hatalı.'])
+            ->withErrors(['email' => 'The e-mail or password is incorrect.'])
             ->withInput($request->only('email'));
     }
              
@@ -85,15 +85,14 @@ class AuthController extends Controller
         return redirect()->route('login.form');       // Giriş sayfasına geri doner
     }
     */
-            public function logout(Request $request)
+      public function logout(Request $request) // tutulan bilgier session da tutuldugu icin onlar temizleniyor
     {
-        // tutulan bilgier session da tutuldugu icin onlar temizleniyor
-        $request->session()->flush();
+         $request->session()->flush();
         return redirect()->route('login.form');
     }
 
-    // bu class kayit formunu gosteir 
-    public function showRegistrationForm()
+    
+    public function showRegistrationForm() // bu class kayit formunu gosteir 
     {
         return view ('auth.register'); // auth/register.blande.php sayfasini yukleme islemi gorur
     }
@@ -119,56 +118,56 @@ class AuthController extends Controller
             
         ]);
 
-        // kayit sonrasi login sayfasina yonlendirr 
-        return redirect()
+       
+        return redirect()   // kayit sonrasi login sayfasina yonlendirr
             ->route('login.form')  // routes/web.php de tanimli login rotasina gonderir
             ->with('success','Please Enter Login');
     }
 
-    // Sifre sifirlama linkini istedigimiz formu gosterir
-    public function showLinkRequestForm()
+   
+    public function showLinkRequestForm()  // Sifre sifirlama linkini istedigimiz formu gosterir
     {
         return view('auth.forgot-password');
     }
 
-    // Kullanıcıya e-posta ile reset link gönderir */
-    public function sendResetLinkEmail(Request $request)
+    
+    public function sendResetLinkEmail(Request $request) // Kullanıcıya e-posta ile reset link gönderir */
     {
-        // epoasta alanini dogrular zorunlu mail formatinda
-        $request->validate(['email'=>'required|email']);
+        
+        $request->validate(['email'=>'required|email']);// epoasta alanini dogrular zorunlu mail formatinda
 
-        // veritabaninda kayitli olan e-posta var mi kontrol edilir 
-        $user = DB::table('users')->where('email', $request->email)->first();
-        if (!$user) {
-            // kayitli kullanici bulunmazsa bulunamadi diye hata mesaji dondur
-            return back()->withErrors(['email'=>'not found the user']);
+         
+        $user = DB::table('users')->where('email', $request->email)->first(); // veritabaninda kayitli olan e-posta var mi kontrol edilir
+        if (!$user) 
+        {
+            return back()->withErrors(['email'=>'not found the user']);  // kayitli kullanici bulunmazsa bulunamadi diye hata mesaji dondur
         }
 
-        // 10 karakter uzunlugunda randim bir token uretir ( Ie65464sdf) gibi bir sye
-        $token = Str::random(10);
+        
+        $token = Str::random(10); // 10 karakter uzunlugunda randim bir token uretir ( Ie65464sdf) gibi bir sye
         DB::table('password_resets')->updateOrInsert(
             ['email' => $request->email],
             ['token'=>$token, 'created_at'=>Carbon::now()]
         );
 
-        // ayni sayfaya geri doner ver mesaj verir 
-        $resetUrl = route('password.reset.form', $token);
+        
+        $resetUrl = route('password.reset.form', $token); // ayni sayfaya geri doner ver mesaj verir 
         Mail::to($request->email)->send(new ResetPasswordMail($user, $resetUrl));
 
-        return back()->with('status','Şifre sıfırlama linki e-posta adresinize gönderildi.');
+        return back()->with('status','The password reset link has been sent to your e-mail address.');
     }
 
-    /** 3) Token’lı linkten gelen formu açar */
-    public function showResetForm($token)
+ 
+    public function showResetForm($token)//Token’lı linkten gelen formu açar */
     {
         return view('auth.change-password', compact('token'));
     }
 
-    /** 4) Yeni şifreyi kaydeder */
-    public function reset(Request $request)
+    
+    public function reset(Request $request) /** 4) Yeni şifreyi kaydeder */
     {
-        // gerekli alanlari mail - token - sifre gibi alanalri dogrular
-        $request->validate([
+    
+        $request->validate([          // gerekli alanlari mail - token - sifre gibi alanalri dogrular
             'token'=>'required',
             'email'=>'required|email',
             'password'=>'required|min:8|confirmed',
@@ -182,13 +181,9 @@ class AuthController extends Controller
             return back()->withErrors(['token'=>'Geçersiz veya süresi dolmuş token']);
         }
 
-        // Şifre güncelle
-        DB::table('users')->where('email', $request->email)
-            ->update(['password'=>Hash::make($request->password)]);
-
-        // Token’ı sil
-        DB::table('password_resets')->where('email',$request->email)->delete();
-
+        
+        DB::table('users')->where('email', $request->email)->update(['password'=>Hash::make($request->password)]); // Şifre güncelleme yapar
+        DB::table('password_resets')->where('email',$request->email)->delete();// Token’ı sil
         return redirect()->route('login.form')->with('success','Şifreniz başarıyla güncellendi.');
     }
 }

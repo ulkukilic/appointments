@@ -18,8 +18,8 @@ Route::get('/clrall', function () {
 // — AuthController: giriş, kayıt, şifre sıfırlama
     Route::controller(AuthController::class)->group(function () {
     // Giriş / Ana sayfa
-    Route::get('/', 'login')->name('login.form');
-    Route::post('login', 'login')->name('login.submit');
+     Route::get('/', 'showLoginForm')->name('login.form');
+     Route::post('login','login')->name('login.submit');
 
     // Kayıt
     Route::get('register', 'showRegistrationForm')->name('register.form');
@@ -65,7 +65,7 @@ Route::get('/clrall', function () {
     Route::get('appointments', 'adminAppointments')->name('superadmin.appointments'); // Tüm şirketlerin randevu yönetimini yapar
     Route::post('appointments/{id}', 'updateStatus')->name('superadmin.appointments.update');
     Route::delete('company/{id}', 'deleteCompany')->name('superadmin.company.delete'); // Şirket yönetimi tum sirketleri silebilir
-    Route::get('company/{id}/edit', 'editCompany')->name('superadmin.company.edit');
+    Route::get('company/{id}/edit', 'editCompany')->name('superadminCompanyEdit');
     Route::put('company/{id}', 'updateCompanyBySuperadmin')->name('superadmin.company.update');
     Route::delete('user/{id}', 'deleteUser')->name('superadmin.user.delete'); // Kullanıcı yönetimi
    

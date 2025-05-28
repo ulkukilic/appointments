@@ -17,94 +17,64 @@ use App\Mail\AppointmentRequestedMail;
 
 class BookingController extends Controller
 {
-    /**
-     * Superadmin – şirket düzenleme formu
-     */
-    public function editCompany($companyId)
+   
+    public function editCompany($companyId) //Superadmin – şirket düzenleme formu
     {
-        $company = DB::table('companies')
-                     ->where('company_uni_id', $companyId)
-                     ->first();
-
-        return view('dash.superadminCompanyEdit', compact('company'));
+        $company = DB::table('companies')->where('company_uni_id', $companyId)->first(); // companies degiskeni tarafindan , company_uni_id degerini cekiyoruz
+         return view('dash.superadminCompanyEdit', compact('company')); // blade'ine $comany verisini gonderiyoruz 
+    }
+     
+    public function updateCompanyBySuperadmin(Request $request, $companyId) //  Superadmin – düzenlemeyi kaydet
+    {
+        DB::table('companies') ->where('company_uni_id', $companyId) ->update($request->only(['name','address','phone_number','description']));// Request icinde gerekli olan alanlari alip guncelliyoruz 
+        return back()->with('success', 'Şirket başarıyla güncellendi.'); // islem sonrasi ayni sayfadaa donup basari mesaji veriyoruz
     }
 
-    /**
-     * Superadmin – düzenlemeyi kaydet
-     */
-    public function updateCompanyBySuperadmin(Request $request, $companyId)
+    public function deleteCompany($companyId)// Şirket silme işlemi (Superadmin)
     {
-        DB::table('companies')
-          ->where('company_uni_id', $companyId)
-          ->update($request->only(['name','address','phone_number','description']));
-
-        return back()->with('success', 'Şirket başarıyla güncellendi.');
-    }
-
-    // Şirket silme işlemi (Superadmin)
-    public function deleteCompany($companyId)
-    {
-        // Şirket varsa sil
-        DB::table('companies')->where('company_uni_id', $companyId)->delete();
-
+        
+        DB::table('companies')->where('company_uni_id', $companyId)->delete();// Şirket varsa sil
         return back()->with('success', 'Şirket başarıyla silindi.');
     }
 
-    // Kullanıcı silme işlemi (Superadmin)
-    public function deleteUser($userId)
+    
+    public function deleteUser($userId)// Kullanıcı silme işlemi (Superadmin)
     {
-        // Kullanıcı varsa sil
-        DB::table('users')->where('user_uni_id', $userId)->delete();
-
+        
+        DB::table('users')->where('user_uni_id', $userId)->delete(); // Kullanıcı varsa sil
         return back()->with('success', 'Kullanıcı başarıyla silindi.');
     }
 
-    // Yalnızca kendi şirketini güncelleyebilir (admin)
-    public function update(Request $request, $company_uni_id)
+    
+    public function update(Request $request, $company_uni_id) // Yalnızca kendi şirketini güncelleyebilir (admin)
     {
-        if (Auth::user()->company_uni_id != $company_uni_id) {
+        if (Auth::user()->company_uni_id != $company_uni_id) // Yetkilendirme yapiliyor Auth::user()'in companu_uni_id si ayni mi 
+        { 
             abort(403); // hata sayfasına yönlendiriyor erişimi olmayanları
         }
 
         // Güncelleme yapılmış bilgileri almak ve güncellemek için
-        DB::table('companies')->where('company_uni_id', $company_uni_id)
-          ->update($request->only(['name','address','phone_number','description']));
-
+        DB::table('companies')->where('company_uni_id', $company_uni_id)->update($request->only(['name','address','phone_number','description']));
         return back()->with('success','Company updated.');
     }
-
-    // Kategori seçildiğinde o kategoriyi listelemek için kullanılacak fonksiyon
-    public function showCategory($category)
+ 
+    public function showCategory($category) // Kategori seçildiğinde o kategoriyi listelemek için kullanılacak fonksiyon
     {
-        // O şirketin tüm bilgilerini çekecek
-        $companies = DB::table('companies')
-                       ->where('category', $category)
-                       ->get();
-
-        // category ve companies bilgilerini gönderir
-        return view('categories.show', compact('category','companies'));
+         $companies = DB::table('companies')->where('category', $category)->get(); // O şirketin tüm bilgilerini çekecek
+        return view('categories.show', compact('category','companies'));// category ve companies bilgilerini gönderir
     }
 
-    // Şirket seçilince personelin ve şirketin müsaitliğini gösterecek fonksiyon
-    public function showCompanyAvailability($category, $companyUniId)
+    
+    public function showCompanyAvailability($category, $companyUniId) // Şirket seçilince personelin ve şirketin müsaitliğini gösterecek fonksiyon
     {
-        // Bugünün tarihini tutacak ki kontrol ona göre sağlansın
-        $startDate = Carbon::now();
-        // Kaç gün ilerideki rezervasyonları görebilir o kontrol edilecek
-        $days      = 30;
+       
+        $startDate = Carbon::now();  // Bugünün tarihini tutacak ki kontrol ona göre sağlansın
+        $days      = 30;  // Kaç gün ilerideki rezervasyonları görebilir o kontrol edilecek
+        $company = DB::table('companies')->where('company_uni_id', $companyUniId)->first(); // company_uni_id ile URL’den sadece onda kayıtlı veriler çekilecek
+        $staffList = DB::table('staff_members')->where('company_uni_id', $companyUniId)->get(); // staff_members tablosundan, o şirkete ait tüm personelleri çek
 
-        // company_uni_id ile URL’den sadece onda kayıtlı veriler çekilecek
-        $company = DB::table('companies')
-                     ->where('company_uni_id', $companyUniId)
-                     ->first();
-
-        // staff_members tablosundan, o şirkete ait tüm personelleri çek
-        $staffList = DB::table('staff_members')
-                       ->where('company_uni_id', $companyUniId)
-                       ->get();
-
-        // SQL'den availability_slots tablosundan her personele ait uygun zamanları getir
-        $staffData = $staffList->map(function($s) {
+        
+        $staffData = $staffList->map(function($s) {// SQL'den availability_slots tablosundan her personele ait uygun zamanları getir
             // Personelin uygun olan, geleceğe dönük slotlarını çekiyoruz
             $slots = DB::table('availability_slots')
                 ->where('staff_member_uni_id', $s->staff_member_uni_id)
@@ -113,8 +83,8 @@ class BookingController extends Controller
                 ->orderBy('start_time')
                 ->get();
 
-            // Slotlar ve personel bilgisi birlikte döndürülür
-            return [
+            
+            return [  // Slotlar ve personel bilgisi birlikte döndürülür 
                 'staff' => $s,
                 'slots' => $slots
             ];
@@ -127,8 +97,8 @@ class BookingController extends Controller
                       ->select('s.*')
                       ->get();
 
-        // kategori, şirket, personeller ve hizmetler
-        return view('categories.availability', [
+        
+        return view('categories.availability', [ // kategori, şirket, personeller ve hizmetler
             'category'   => $category,
             'company'    => $company,
             'staffData'  => $staffData,
@@ -153,19 +123,17 @@ class BookingController extends Controller
             ->where('availability_slots.slot_id', $request->slot_id)
             ->where('availability_slots.status', 'available')
             ->select('availability_slots.*', 'staff_members.company_uni_id')
-            ->lockForUpdate()
+            ->lockForUpdate() // kilitleme islemi 
             ->first();
 
-        if (! $slot) {
-            // senden önce başkası aldıysa artık müsait değil yazısı görür
-            DB::rollBack();
-            return back()->with('error', 'Seçilen slot artık müsait değil.');
+        if (! $slot) 
+        {
+            DB::rollBack(); // senden önce başkası aldıysa artık müsait değil yazısı görür
+            return back()->with('error', 'selected stock not currently available');
         }
 
-        // Slot durumunu booked olarak güncelle
-        DB::table('availability_slots')
-            ->where('slot_id', $request->slot_id)
-            ->update(['status' => 'booked']);
+        
+        DB::table('availability_slots')->where('slot_id', $request->slot_id)->update(['status' => 'booked']); // Slot durumunu booked olarak güncelle
 
         // appointments tablosuna randevu kaydı ekle
         $appointmentId = DB::table('appointments')->insertGetId([
@@ -179,28 +147,25 @@ class BookingController extends Controller
             'created_at'           => now(),
         ]);
 
-        // Transaction onayla
-        DB::commit();
+        
+        DB::commit();// onayla
  
              
-        // Müşteriye onay e-postası gönder
-        Mail::to(session('email'))
-             ->send(new AppointmentRequestedMail($appointmentId));
-        // Müşteri paneline yönlendir ve başarı mesajı göster
-        return redirect()->route('dash.customer')
-                         ->with('success', 'Randevu isteğiniz başarıyla alındı.');
+        
+        Mail::to(session('email'))->send(new AppointmentRequestedMail($appointmentId)); // Müşteriye onay e-postası gönder
+        return redirect()->route('dash.customer')->with('success', 'Randevu isteğiniz başarıyla alındı.');  // Müşteri paneline yönlendir ve başarı mesajı göster
     }
 
-    // Admin: Şirkete ait personel listesini getir
-    public function listStaff()
+    
+    public function listStaff() // Admin: Şirkete ait personel listesini getir
     {
         // Yalnızca kendi şirketinin personelini döner
-        $companyId = session('company_uni_id');
+        $companyId = session('company_uni_id'); // oturumdaki sirket ID sine gore filtrelenir
         $staff = DB::table('staff_members')
                    ->where('company_uni_id', $companyId)
                    ->get();
           return view('dash.adminStaff', compact('staff'));
-         }
+     }
 
     public function addStaff(Request $request)
     {
@@ -217,7 +182,7 @@ class BookingController extends Controller
             'created_at'        => now(),
         ]);
 
-        return back()->with('success','Çalışan eklendi.');
+        return back()->with('success','Employee added. ');
     }
 
     public function deleteStaff($id)
