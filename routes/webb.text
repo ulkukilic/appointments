@@ -1,9 +1,4 @@
-<?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BookingController;
 
 // — Cache temizleme
 Route::get('/clrall', function () {
@@ -16,7 +11,7 @@ Route::get('/clrall', function () {
 });
 
 // — AuthController: giriş, kayıt, şifre sıfırlama
-    Route::controller(AuthController::class)->group(function () {
+Route::controller(AuthController::class)->group(function () {
     // Giriş / Ana sayfa
     Route::get('/', 'login')->name('login.form');
     Route::post('login', 'login')->name('login.submit');
@@ -34,20 +29,20 @@ Route::get('/clrall', function () {
     Route::get('reset-password/{token}', 'showResetForm')->name('password.reset.form');
     Route::post('reset-password', 'reset')->name('password.reset');
 });
-   //Müşteri, Admin ve Süperadmin Dashboard’ları
-    Route::prefix('dash')->group(function () { // prefix ornegin 'dash' yazildi normalde getden sonra hepsi icin dash yazilmasi gerkeiyordu fakat simdi en basa das yazarak onu kisalltik uzun projelerde isine yarayabilir
+//Müşteri, Admin ve Süperadmin Dashboard’ları
+Route::prefix('dash')->group(function () { // prefix ornegin 'dash' yazildi normalde getden sonra hepsi icin dash yazilmasi gerkeiyordu fakat simdi en basa das yazarak onu kisalltik uzun projelerde isine yarayabilir
     Route::get('customer', fn() => view('dash.customer'))->name('dash.customer')->middleware('userType:1');
     Route::get('admin', fn() => view('dash.admin'))->name('dash.admin')->middleware('userType:2');
     Route::get('superadmin', fn() => view('dash.superAdmin'))->name('dash.superadmin')->middleware('userType:3');
 });
-    Route::controller(BookingController::class)->group(function () {
+Route::controller(BookingController::class)->group(function () {
     Route::get('categories/{category}', 'showCategory')->name('categories.show');
     Route::get('categories/{category}/companies/{company}', 'showCompanyAvailability')->name('categories.company.availability');
     Route::post('appointment/book', 'book')->middleware('userType:1')->name('appointment.book'); // Randevu oluşturma (yalnızca müşteri)
     Route::get('appointment/book', fn() => redirect()->route('dash.customer')); // GET isteği atılırsa müşteri dash'e yönlendir
 });
-    // — admin rotaları (user_type = 2)
-    Route::prefix('admin')->middleware('userType:2')->controller(BookingController::class)->group(function () {   // sadece adminin yapabildigi kontroller
+Route::prefix('admin')->middleware('userType:2')->controller(BookingController::class)->group(function () {   // sadece adminin yapabildigi kontroller
+   
     Route::get('categories', 'adminCategories')->name('admin.categories.index');// Kategori yönetimi
     
     Route::get('staff', 'listStaff')->name('admin.staff.index'); // Çalışan yönetimi ekleyebilir silebilir
@@ -59,8 +54,8 @@ Route::get('/clrall', function () {
     Route::post('companies/{company_uni_id}/update', 'updateCompany')->name('admin.companies.update');// Şirket güncelleme
 });
 
-  // — Süperadmin rotaları (user_type = 3)
-    Route::prefix('superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {
+// — Süperadmin rotaları (user_type = 3)
+Route::prefix('superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {
    
     Route::get('appointments', 'adminAppointments')->name('superadmin.appointments'); // Tüm şirketlerin randevu yönetimini yapar
     Route::post('appointments/{id}', 'updateStatus')->name('superadmin.appointments.update');
@@ -70,3 +65,31 @@ Route::get('/clrall', function () {
     Route::delete('user/{id}', 'deleteUser')->name('superadmin.user.delete'); // Kullanıcı yönetimi
    
 });
+
+/*
+
+      Route::controller(SettingController::class)->prefix('setting')->group(function(){
+
+            Route::get('list', 'settingList')->name('settingList');
+            Route::get('edit', 'settingEdit')->name('settingEdit');
+            Route::get('translations', 'settingTranslationsList')->name('settingTranslationsList');
+
+            Route::post('edit', 'settingEditPost')->name('settingEditPost');
+            Route::post('translations', 'settingTranslationsEditPost')->name('settingTranslationsEditPost');
+            Route::post('translations', 'settingTranslationsAddtPost')->name('settingTranslationsAddtPost');
+            Route::post('our-excel-upload', 'settingOurExcelUploadPost')->name('settingOurExcelUploadPost');
+
+                });
+
+            Route::get('order-list/{token}', [CompanyController::class, 'companyOrderList'])->name('companyOrderList');
+            Route::get('order-to-excel/{token}', [CompanyController::class, 'companyOrderToExcel'])->name('companyOrderToExcel');
+            Route::get('order-history/{token}', [CompanyController::class, 'companyOrderHistoryList'])->name('companyOrderHistoryList');
+            Route::get('order-completed-detay-list/{token}', [CompanyController::class, 'companyOrderCompletedDetayList'])->name('companyOrderCompletedDetayList');
+
+
+            Route::post('add', [CompanyController::class, 'companyAddPost'])->name('companyAddPost');
+            Route::post('edit', [CompanyController::class, 'companyEditPost'])->name('companyEditPost');
+            Route::post('status', [CompanyController::class, 'companyStatusPost'])->name('companyStatusPost');
+            Route::post('mapping', [CompanyController::class, 'companyMappingPost'])->name('companyMappingPost');
+            Route::post('product-add', [CompanyController::class, 'companyProductAddPost'])->name('companyProductAddPost');
+            */
