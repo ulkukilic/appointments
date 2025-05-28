@@ -34,7 +34,7 @@
           <td>{{ $c->email }}</td>
           <td>
             <!-- Düzenle butonu: Şirket bilgilerini güncelleme sayfasına yönlendirir -->
-             <a href="{{ route('superadminCompanyEdit', $c->company_uni_id) }}" class="btn btn-sm btn-warning">Düzenle</a>
+             <a href="{{ route('superadmin.company.edit', $c->company_uni_id) }}" class="btn btn-sm btn-warning">Düzenle</a>
             <!-- Silme formu: Şirket kaydını silme işlemi yapar -->
             <form method="POST" action="{{ route('superadmin.company.delete', $c->company_uni_id) }}" style="display:inline-block">
               @csrf
@@ -118,11 +118,10 @@
           <td>{{ ucfirst($a->status) }}</td>
           <td>
             <!-- Durum güncelleme formu: Açılır listeden yeni durumu seçip gönderir -->
-            <form method="POST" action="{{ route('superadmin.appointments.update', $a->appointment_id) }}">
-               @csrf
-              
+              <form method="POST" action="{{ route('superadmin.appointments.update', $a->appointment_id) }}" class="d-inline">
+              @csrf
               <select name="status" class="form-select form-select-sm d-inline w-auto">
-                <option value="pending" {{ $a->status === 'pending' ? 'selected' : '' }}>Beklemede</option>
+                <option value="pending"   {{ $a->status === 'pending'   ? 'selected' : '' }}>Beklemede</option>
                 <option value="confirmed" {{ $a->status === 'confirmed' ? 'selected' : '' }}>Onaylandı</option>
                 <option value="cancelled" {{ $a->status === 'cancelled' ? 'selected' : '' }}>İptal</option>
               </select>

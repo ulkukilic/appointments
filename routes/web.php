@@ -60,13 +60,13 @@ Route::get('/clrall', function () {
 });
 
   // — Süperadmin rotaları (user_type = 3)
-    Route::prefix('superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {
+    Route::prefix('dash/superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {
    
     Route::get('appointments', 'adminAppointments')->name('superadmin.appointments'); // Tüm şirketlerin randevu yönetimini yapar
     Route::post('appointments/{id}', 'updateStatus')->name('superadmin.appointments.update');
     Route::delete('company/{id}', 'deleteCompany')->name('superadmin.company.delete'); // Şirket yönetimi tum sirketleri silebilir
-    Route::get('company/{id}/edit', 'editCompany')->name('superadminCompanyEdit');
-    Route::put('company/{id}', 'updateCompanyBySuperadmin')->name('superadmin.company.update');
+    Route::get('company/{id}/edit', 'editCompany')->name('superadmin.company.edit');
+    Route::post('company/{id}', 'updateCompanyBySuperadmin')->name('superadmin.company.update');
     Route::delete('user/{id}', 'deleteUser')->name('superadmin.user.delete'); // Kullanıcı yönetimi
    
 });

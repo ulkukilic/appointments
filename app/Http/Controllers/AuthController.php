@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;    // Manuel doğrulama
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Mail\ResetPasswordMail;              // Mail sınıfı
-
+use App\Mail\AppointmentStatusMail;  
 class AuthController extends Controller
 {
     

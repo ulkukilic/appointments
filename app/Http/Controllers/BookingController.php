@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;                           // Tarih/saat işlemleri için
 use App\Mail\ResetPasswordMail;              // Şifre sıfırlama postası
 use App\Mail\AppointmentRequestedMail;
+use App\Mail\AppointmentStatusMail;   
 
 
 class BookingController extends Controller
@@ -215,21 +216,35 @@ class BookingController extends Controller
         }
 
 
-    public function updateStatus(Request $r, $id)
+      public function updateStatus(Request $r, $id)
     {
-        $r->validate(['status'=>'required|in:pending,confirmed,cancelled']);
+          
+    
+           $r->validate([    // Geçerli statü değerlerini kontrol et
+            'status' => 'required|in:pending,confirmed,cancelled'
+             ]);
 
-        // Admin: sadece kendi şirkete ait randevıya dokun
-        $updated = DB::table('appointments')
-            ->where('appointment_id', $id)
-            ->where('company_uni_id', session('company_uni_id'))
-            ->update(['status'=>$r->status]);
+ 
+             $query = DB::table('appointments')
+             ->where('appointment_id', $id);
 
-        if ($updated) {
-            // Mail gönderirken Auth::user()->email kullanırsın
-            Mail::to($r->email)->send(new AppointmentStatusMail($id,$r->status));
-        }
+           if (session('user_type_id') !== 3)
+             {
+               $query->where('company_uni_id', session('company_uni_id')); // superadmin degilse sadece kendi sirketine mudahele edebilir
+             }
 
-        return back()->with('success','Durum güncellendi.');
-    }
+   
+           $updated = $query->update([  // statusu update edildi
+          'status' => $r->status
+         ]);
+
+   
+            if ($updated) 
+            {
+               Mail::to($r->email) ->send(new AppointmentStatusMail($id, $r->status));   // statu degistirilmisse musteriye mail gider
+            }
+             return redirect() ->route('superadmin.appointments')->with('success','Status updated.');    
+ 
+          }
+
 }
