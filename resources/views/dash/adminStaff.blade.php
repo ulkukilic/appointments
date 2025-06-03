@@ -1,49 +1,58 @@
+{{-- Admin – Personel Listesi & Ekleme --}}
 @extends('layouts.app')
 
-@section('title', 'Staff Members')
-@section('page_title', 'Manage Staff Members')
+@section('title', 'Admin - Personel Yönetimi')
+@section('page_title', 'Personel Listesi')
 
 @section('content')
   @include('layouts.alerts')
 
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Full Name</th>
-        <th>Experience Level</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($staff as $s)
-        <tr>
-          <td>{{ $loop->iteration }}</td>
-          <td>{{ $s->full_name }}</td>
-          <td>{{ $s->experience_level }}</td>
-          <td>
-            <form method="POST" action="{{ route('admin.staff.delete', $s->staff_member_uni_id) }}">
-              @csrf
-              @method('DELETE')
-              <button class="btn btn-danger btn-sm">Sil</button>
-            </form>
-          </td>
-        </tr>
-      @endforeach
-    </tbody>
-  </table>
+  {{-- Personel Ekleme Butonu --}}
+  <div class="mb-3">
+    <a href="{{ route('admin.staff.edit', 0) }}" class="btn btn-success">
+      Yeni Personel Ekle
+    </a>
+  </div>
 
-  <h4 class="mt-4">Add New Staff Member</h4>
-  <form method="POST" action="{{ route('admin.staff.add') }}" class="row g-2">
-    @csrf
-    <div class="col-md-5">
-      <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
-    </div>
-    <div class="col-md-5">
-      <input type="text" name="experience_level" class="form-control" placeholder="Experience Level" required>
-    </div>
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">Ekle</button>
-    </div>
-  </form>
+  @if($staff->isEmpty())
+    <p class="text-muted">Henüz bu şirkete ait kişisel veri yok.</p>
+  @else
+    <table class="table table-striped table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Ad Soyad</th>
+          <th>Deneyim Seviyesi</th>
+          <th>İşlemler</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach($staff as $s)
+          <tr>
+            <td>{{ $loop->iteration }}</td>
+            <td>{{ $s->full_name }}</td>
+            <td>{{ $s->experience_level }}</td>
+            <td>
+              {{-- Düzenle Butonu --}}
+              <a href="{{ route('admin.staff.edit', $s->staff_member_uni_id) }}" class="btn btn-sm btn-warning me-1">
+                Düzenle
+              </a>
+
+              {{-- Sil Butonu --}}
+              <form 
+                method="POST" 
+                action="{{ route('admin.staff.delete', $s->staff_member_uni_id) }}" 
+                class="d-inline-block"
+                onsubmit="return confirm('Bu çalışanı silmek istediğinizden emin misiniz?');"
+              >
+                @csrf
+                @method('DELETE')
+                <button class="btn btn-sm btn-danger">Sil</button>
+              </form>
+            </td>
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
+  @endif
 @endsection

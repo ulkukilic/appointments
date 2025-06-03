@@ -18,7 +18,7 @@ Route::get('/clrall', function () {
 // — AuthController: giriş, kayıt, şifre sıfırlama
     Route::controller(AuthController::class)->group(function () {
           // Giriş / Ana sayfa
-          Route::get('/', 'showLoginForm')->name('login.form');
+          Route::get('login', 'showLoginForm')->name('login.form');
           Route::post('login','login')->name('login.submit');
 
           // Kayıt
@@ -60,6 +60,8 @@ Route::get('/clrall', function () {
     
     Route::get('staff', 'listStaff')->name('admin.staff.index'); // Çalışan yönetimi ekleyebilir silebilir
     Route::post('staff', 'addStaff')->name('admin.staff.add');
+    Route::get('staff/edit/{id}', 'editStaff')->name('admin.staff.edit');
+    Route::post('staff/update/{id}', 'updateStaff')->name('admin.staff.update');
     Route::delete('staff/{id}', 'deleteStaff')->name('admin.staff.delete');
 
     Route::get('appointments', 'adminAppointments')->name('admin.appointments');  // Randevu yönetimi kontrol ve update
