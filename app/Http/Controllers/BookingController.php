@@ -49,14 +49,14 @@ class BookingController extends Controller
     
     public function update(Request $request, $company_uni_id) // Yalnızca kendi şirketini güncelleyebilir (admin)
     {
-        if (Auth::user()->company_uni_id != $company_uni_id) // Yetkilendirme yapiliyor Auth::user()'in companu_uni_id si ayni mi 
-        { 
-            abort(403); // hata sayfasına yönlendiriyor erişimi olmayanları
+         if (session('company_uni_id') != $company_uni_id) {
+            abort(403); // Hata sayfası
         }
-
-        // Güncelleme yapılmış bilgileri almak ve güncellemek için
-        DB::table('companies')->where('company_uni_id', $company_uni_id)->update($request->only(['name','address','phone_number','description']));
+        DB::table('companies')
+            ->where('company_uni_id', $company_uni_id)
+            ->update($request->only(['name','address','phone_number','description']));
         return back()->with('success','Company updated.');
+    
     }
  
     public function showCategory($category) // Kategori seçildiğinde o kategoriyi listelemek için kullanılacak fonksiyon
@@ -177,7 +177,7 @@ class BookingController extends Controller
 
         // Admin: sadece kendi şirketine personel ekle
         DB::table('staff_members')->insert([
-            'company_uni_id'    => Auth::user()->company_uni_id,
+            'company_uni_id'    =>  session('company_uni_id'),
             'full_name'         => $request->full_name,
             'experience_level'  => $request->experience_level,
             'created_at'        => now(),
@@ -198,7 +198,7 @@ class BookingController extends Controller
     }
 
     public function adminAppointments()
-    {
+    {    $companyId = session('company_uni_id');
         // Admin: sadece kendi şirkete ait randevuları listele
         $list = DB::table('appointments as a')
             ->join('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')
@@ -243,8 +243,71 @@ class BookingController extends Controller
             {
                Mail::to($r->email) ->send(new AppointmentStatusMail($id, $r->status));   // statu degistirilmisse musteriye mail gider
             }
-             return redirect() ->route('superadmin.appointments')->with('success','Status updated.');    
- 
-          }
+            
+              if (session('user_type_id') === 3) 
+              {
+               return redirect()->route('superadmin.appointments')->with('success','Status updated.');
+              }
+        return redirect()->route('admin.appointments')->with('success','Status updated.');
+}
 
+
+    public function showAvailabilityManagement()
+{
+    // Şirket ID'sini oturumdan alır
+    $companyId = session('company_uni_id');
+
+    // Şirkete ait tüm personel kayıtlarını çeker
+    $staffList = DB::table('staff_members')
+                   ->where('company_uni_id', $companyId)
+                   ->get();
+
+    // Her personel için uygunluk slotlarını sorgular ve bir araya getirir
+    $availabilityData = $staffList->map(function($s) {
+        // Bu personelin tüm slotlarını başlangıç zamanına göre sıralı şekilde alır
+        $slots = DB::table('availability_slots')
+                   ->where('staff_member_uni_id', $s->staff_member_uni_id)
+                   ->orderBy('start_time')
+                   ->get();
+
+        return [
+            'staff' => $s,    // Personel bilgisi
+            'slots' => $slots // Bu personele ait slot bilgileri
+        ];
+    });
+
+    // 'dash.adminAvailability' görünümüne veriyi gönderir
+    return view('dash.adminAvailability', [
+        'availabilityData' => $availabilityData
+    ]);
+}
+
+public function updateAvailabilitySlot(Request $request, $slotId)
+{
+    // Gelen istekteki 'status' alanını 'available' veya 'unavailable' olarak doğrular
+    $request->validate([
+        'status' => 'required|in:available,unavailable'
+    ]);
+
+    // Slotun, oturumdaki şirkete ait personelden birine ait olup olmadığını kontrol eder
+    $slot = DB::table('availability_slots')
+              ->join('staff_members', 'availability_slots.staff_member_uni_id', '=', 'staff_members.staff_member_uni_id')
+              ->where('availability_slots.slot_id', $slotId)
+              ->where('staff_members.company_uni_id', session('company_uni_id'))
+              ->select('availability_slots.*')
+              ->first();
+
+    // Slot bulunamazsa yetkisiz erişim olarak işlem yapar
+    if (! $slot) {
+        abort(403);
+    }
+
+    // Slot durumunu gelen değerle günceller
+    DB::table('availability_slots')
+      ->where('slot_id', $slotId)
+      ->update(['status' => $request->status]);
+
+    // Geri dönerek başarı mesajı verir
+    return back()->with('success', 'Slot durumu güncellendi.');
+}
 }

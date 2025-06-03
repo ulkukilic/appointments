@@ -36,11 +36,16 @@ class AuthController extends Controller
              
              if($user && Hash::check($request->password,$user->password)) //sifre kontrolu yapiliyor ve icerisinde ki degerler user tablosundaki degerlere bakiyor
              {
+                 // Bir kullanıcı birden fazla şirkete sahip olabilir; biz varsayılan olarak ilkini alıyoruz
+                $companyOwner = DB::table('company_uni_id')
+                ->where('user_uni_id', $user->user_uni_id)
+                ->first();
+
                 session([
                    'user_uni_id'    => $user->user_uni_id,
                    'user_type_id'   => $user->user_type_id,
                    'full_name'      => $user->full_name,
-                   'email'          => $user->email,
+                   'email'          =>  $companyOwner ? $companyOwner->company_uni_id : null, 
                    'company_uni_id' =>  property_exists($user, 'company_uni_id') ? $user->company_uni_id : null,
                 ]);
 

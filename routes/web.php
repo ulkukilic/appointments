@@ -65,7 +65,10 @@ Route::get('/clrall', function () {
     Route::get('appointments', 'adminAppointments')->name('admin.appointments');  // Randevu yönetimi kontrol ve update
     Route::post('appointments/{id}', 'updateStatus')->name('admin.appointments.update');
     Route::post('companies/{company_uni_id}/update', 'updateCompany')->name('admin.companies.update');// Şirket güncelleme
-});
+
+    Route::get('availability', 'showAvailabilityManagement')->name('admin.availability.index');
+    Route::post('availability/{slotId}', 'updateAvailabilitySlot')->name('admin.availability.update');
+ });
 
   // — Süperadmin rotaları (user_type = 3)
     Route::prefix('dash/superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {
