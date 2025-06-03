@@ -248,7 +248,7 @@ public function updateStaff(Request $request, $id)
    
             if ($updated) 
             {
-               Mail::to($r->email) ->send(new AppointmentStatusMail($id, $r->status));   // statu degistirilmisse musteriye mail gider
+              // Mail::to($r->email) ->send(new AppointmentStatusMail($id, $r->status));   // statu degistirilmisse musteriye mail gider
             }
             
               if (session('user_type_id') === 3) 

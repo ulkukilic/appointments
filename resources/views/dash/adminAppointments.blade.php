@@ -6,6 +6,7 @@
 
 @section('content')
   @include('layouts.alerts')
+<p>Session company ID: {{ session('company_uni_id') }}</p>
 
   @if($list->isEmpty())
     <p class="text-muted">Henüz bu şirkete ait randevu yok.</p>
