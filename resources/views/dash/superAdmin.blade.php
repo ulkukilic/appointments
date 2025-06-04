@@ -1,17 +1,17 @@
+
 @extends('layouts.app')
 
 @section('title', 'Superadmin Dashboard')
-
 @section('page_title', 'Welcome Superadmin, ' . session('full_name') . '!')
 
 @section('content')
+<div class="mb-4">
+  <button onclick="showSection('companies')" class="btn btn-outline-primary">Şirketler</button>
+  <button onclick="showSection('users')" class="btn btn-outline-secondary">Kullanıcılar</button>
+  <button onclick="showSection('appointments')" class="btn btn-outline-success">Randevular</button>
+</div>
 
-  <!-- Bilgilendirme mesajı: Superadmin arayüzünün amacı hakkında bilgi verir -->
-  <div class="alert alert-info">
-    From here, you can manage all companies, users, and appointments.
-  </div>
-
-  <!-- Şirket Yönetimi Başlığı: Şirketlerle ilgili işlemleri görüntüler -->
+<div id="companies-section">
   <h3>Company Management</h3>
   @php
     $companies = DB::table('companies')->get();
@@ -21,7 +21,7 @@
     <thead>
       <tr>
         <th>Name</th>
-        <th>categories</th>
+        <th>Categories</th>
         <th>Email</th>
         <th>Operations</th>
       </tr>
@@ -33,9 +33,7 @@
           <td>{{ $c->category }}</td>
           <td>{{ $c->email }}</td>
           <td>
-            <!-- Düzenle butonu: Şirket bilgilerini güncelleme sayfasına yönlendirir -->
-             <a href="{{ route('superadmin.company.edit', $c->company_uni_id) }}" class="btn btn-sm btn-warning">Düzenle</a>
-            <!-- Silme formu: Şirket kaydını silme işlemi yapar -->
+            <a href="{{ route('superadmin.company.edit', $c->company_uni_id) }}" class="btn btn-sm btn-warning">Düzenle</a>
             <form method="POST" action="{{ route('superadmin.company.delete', $c->company_uni_id) }}" style="display:inline-block">
               @csrf
               @method('DELETE')
@@ -46,14 +44,15 @@
       @endforeach
     </tbody>
   </table>
-
-  <!-- Kullanıcı Yönetimi Başlığı: Sistemdeki kullanıcıları listeler ve silme işlemi sağlar -->
-  <h3 class="mt-5">User Management</h3>
+</div>
+<!-- 🟢 Kullanıcılar Bölümü (Başta gizli) -->
+<div id="users-section" style="display:none">
+  <h3>User Management</h3>
   @php
     $users = DB::table('users')
-               ->join('user_types', 'users.user_type_id', '=', 'user_types.user_type_id')
-               ->select('users.*', 'user_types.user_type_name')
-               ->get();
+      ->join('user_types', 'users.user_type_id', '=', 'user_types.user_type_id')
+      ->select('users.*', 'user_types.user_type_name')
+      ->get();
   @endphp
 
   <table class="table table-bordered">
@@ -72,7 +71,6 @@
           <td>{{ $u->email }}</td>
           <td>{{ $u->user_type_name }}</td>
           <td>
-            <!-- Silme formu: Kullanıcıyı sistemden kaldırır -->
             <form method="POST" action="{{ route('superadmin.user.delete', $u->user_uni_id) }}">
               @csrf
               @method('DELETE')
@@ -83,9 +81,11 @@
       @endforeach
     </tbody>
   </table>
+</div>
 
-  <!-- Randevu Yönetimi Başlığı: Son oluşturulan randevuları listeler ve durum güncelleme imkanı sunar -->
-  <h3 class="mt-5">Appointment Management</h3>
+<!-- 🟢 Randevular Bölümü (Başta gizli) -->
+<div id="appointments-section" style="display:none">
+  <h3>Appointment Management</h3>
   @php
     $appointments = DB::table('appointments')
       ->join('users', 'appointments.user_uni_id', '=', 'users.user_uni_id')
@@ -117,12 +117,11 @@
           <td>{{ \Carbon\Carbon::parse($a->scheduled_time)->format('d.m.Y H:i') }}</td>
           <td>{{ ucfirst($a->status) }}</td>
           <td>
-            <!-- Durum güncelleme formu: Açılır listeden yeni durumu seçip gönderir -->
-              <form method="POST" action="{{ route('superadmin.appointments.update', $a->appointment_id) }}" class="d-inline">
+            <form method="POST" action="{{ route('superadmin.appointments.update', $a->appointment_id) }}" class="d-inline">
               @csrf
-              <input type="hidden" name="email" value="{{isset ( $a->email) ?  $a->emai: ' ' }}" >
+              <input type="hidden" name="email" value="{{ isset($a->email) ? $a->email : '' }}">
               <select name="status" class="form-select form-select-sm d-inline w-auto">
-                <option value="pending"   {{ $a->status === 'pending'   ? 'selected' : '' }}>Beklemede</option>
+                <option value="pending" {{ $a->status === 'pending' ? 'selected' : '' }}>Beklemede</option>
                 <option value="confirmed" {{ $a->status === 'confirmed' ? 'selected' : '' }}>Onaylandı</option>
                 <option value="cancelled" {{ $a->status === 'cancelled' ? 'selected' : '' }}>İptal</option>
               </select>
@@ -133,5 +132,16 @@
       @endforeach
     </tbody>
   </table>
+</div>
+
+<!-- 🟢 JS ile buton kontrolü -->
+<script>
+  function showSection(section) {
+    document.getElementById('companies-section').style.display = 'none';
+    document.getElementById('users-section').style.display = 'none';
+    document.getElementById('appointments-section').style.display = 'none';
+    document.getElementById(section + '-section').style.display = 'block';
+  }
+</script>
 
 @endsection

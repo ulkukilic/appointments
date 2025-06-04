@@ -108,11 +108,13 @@ class BookingController extends Controller
         // Yalnızca kendi şirketinin personelini döner
        // Oturumdan geçerli şirket ID'sini alır
             $companyId = session('company_uni_id');
+            $userTypeId = session('user_type_id');
 
-            // Şirket ID'si yoksa 403 hatası döner
-            if (!$companyId) {
+            // Eğer adminse ve şirket ID'si yoksa erişimi reddet
+            if ($userTypeId == 2 && !$companyId) {
                 abort(403, 'Şirket bilgisi bulunamadı.');
             }
+
 
             // Şirkete ait personel kayıtlarını tam isme göre sıralayarak çeker
             $staff = DB::table('staff_members')
@@ -129,9 +131,13 @@ class BookingController extends Controller
    {
         // Oturumdan şirket ID'sini al; yoksa yetkisiz erişim hatası döndür
         $companyId = session('company_uni_id');
-        if (!$companyId) {
+        $userTypeId = session('user_type_id');
+
+        // Eğer adminse ve şirket ID'si yoksa erişimi reddet
+        if ($userTypeId == 2 && !$companyId) {
             abort(403, 'Şirket bilgisi bulunamadı.');
         }
+
         if ($id == 0) {
             // “Yeni Personel Ekle” demek: boş bir $staff değişkeni gönderelim
             return view('dash.adminStaffEdit'); 
@@ -153,11 +159,16 @@ class BookingController extends Controller
 
 public function updateStaff(Request $request, $id)
 {
-    // Oturumdan şirket ID'sini al; yoksa yetkisiz erişim hatası döndür
-    $companyId = session('company_uni_id');
-    if (!$companyId) {
-        abort(403, 'Şirket bilgisi bulunamadı.');
-    }
+      $companyId = session('company_uni_id');
+        $companyId = session('company_uni_id');
+        $userTypeId = session('user_type_id');
+
+        // Eğer adminse ve şirket ID'si yoksa erişimi reddet
+        if ($userTypeId == 2 && !$companyId) {
+            abort(403, 'Şirket bilgisi bulunamadı.');
+        }
+
+
 
     // İsim ve deneyim seviyesi alanlarını doğrula
     $request->validate([
@@ -226,38 +237,36 @@ public function updateStaff(Request $request, $id)
 
 
       public function updateStatus(Request $request, $id)
+  {
+       $status = $request->input('status');
+       $email  = $request->input('email');
+
+    $updated = DB::table('appointments')->where('appointment_id', $id)->update([
+        'status' => $status]);
+
+    // Başarıyla güncellendiyse e-posta (isteğe bağlı)
+    if ($updated && $email) 
     {
-          $request->validate([    // Geçerli statü değerlerini kontrol et
-            'status' => 'required|in:pending,confirmed,cancelled'
-             ]);
+        // Mail::to($email)->send(new AppointmentStatusMail($id, $status));
+    }
 
- 
-             $query = DB::table('appointments')
-             ->where('appointment_id', $id);
+    // Kullanıcı tipi kontrolü
+    $userType = session('user_type_id');
 
-           if (session('user_type_id') !== 3)
-             {
-               $query->where('company_uni_id', session('company_uni_id')); // superadmin degilse sadece kendi sirketine mudahele edebilir
-             }
+    if ($userType == 3) 
+    {
+        // SuperAdmin aynı sayfada kalmalı
+        return redirect()->back()->with('success', 'Status updated.');
+    } 
+    
+    else 
+    {
+        // Admin için admin randevu sayfasına yönlendir
+        return redirect()->route('admin.appointments')->with('success', 'Status updated.');
+    }      
+  }
 
    
-           $updated = $query->update([  // statusu update edildi
-          'status' => $request->status
-         ]);
-
-   
-            if ($updated) 
-            {
-              // Mail::to($r->email) ->send(new AppointmentStatusMail($id, $r->status));   // statu degistirilmisse musteriye mail gider
-            }
-            
-              if (session('user_type_id') === 3) 
-              {
-               return redirect()->route('superadmin.appointments')->with('success','Status updated.');
-              }
-        return redirect()->route('admin.appointments')->with('success','Status updated.');
-}
-
 
     public function showAvailabilityManagement()
   { 
@@ -337,9 +346,13 @@ public function updateAvailabilitySlot(Request $request, $slotId)
   {
     // Oturumdan şirket ID'sini al; yoksa 403 hatası döndür
     $companyId = session('company_uni_id');
-    if (!$companyId) {
+    $userTypeId = session('user_type_id');
+
+    // Eğer adminse ve şirket ID'si yoksa erişimi reddet
+    if ($userTypeId == 2 && !$companyId) {
         abort(403, 'Şirket bilgisi bulunamadı.');
     }
+
 
     // Şirkete ait tüm randevuları al, müşteri, hizmet ve personel bilgilerini ilişkilendir
     $list = DB::table('appointments as a')

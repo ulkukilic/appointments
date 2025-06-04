@@ -14,6 +14,9 @@ Route::get('/clrall', function () {
     Artisan::call('optimize');
     echo "Cache temizlendi!";
 });
+// Ana sayfaya gelen istekleri login ekranına yönlendir
+ Route::get('/', fn() => redirect()->route('login.form'));
+
 
 // — AuthController: giriş, kayıt, şifre sıfırlama
     Route::controller(AuthController::class)->group(function () {

@@ -49,7 +49,7 @@ class AuthController extends Controller
                     'company_uni_id' => $companyOwner ? $companyOwner->company_uni_id : null,
                 ]);
 
-                  // password dogru ve bilgilerde eslesme varsa o zaman user_type devreye giriyor ve logindan sonra gonderilmesi gereken panel sayfasina yonlendiriyor
+                  // password dogru ve bilgilerde eslaesme varsa o zaman user_type devreye giriyor ve logindan sonra gonderilmesi gereken panel sayfasina yonlendiriyor
                    if ($user->user_type_id == 1) 
                    {
                       return redirect()->route('dash.customer');

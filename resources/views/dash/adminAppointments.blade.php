@@ -35,11 +35,8 @@
             <td>{{ \Carbon\Carbon::parse($item->scheduled_time)->format('d M Y H:i') }}</td>
             <td class="text-capitalize">{{ $item->status }}</td>
             <td>
-              <form 
-                method="POST" 
-                action="{{ route('admin.appointments.update', $item->appointment_id) }}"
-                class="d-flex align-items-center"
-              >
+             <form method="POST" action="{{ route('admin.appointments.update', $item->appointment_id) }}">
+
                 @csrf
                 <input type="hidden" name="email" value="{{ $item->email }}">
                 <select name="status" class="form-select form-select-sm me-2">
