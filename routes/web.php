@@ -72,9 +72,10 @@ Route::get('/clrall', function () {
     Route::post('companies/{company_uni_id}/update', 'updateCompany')->name('admin.companies.update');// Şirket güncelleme
 
     Route::get('availability', 'showAvailabilityManagement')->name('admin.availability.index');
-    Route::post('availability/{slotId}', 'updateAvailabilitySlot')->name('admin.availability.update');
     Route::post('availability/add', 'addAvailabilitySlot')->name('admin.availability.add');
-
+    Route::get('availability/add', fn() => redirect()->route('dash.admin'));
+    Route::post('availability/{slotId}', 'updateAvailabilitySlot')->name('admin.availability.update');
+    
   });
 
   // — Süperadmin rotaları (user_type = 3)

@@ -1,3 +1,4 @@
+
 @include('layouts.alerts')
 
 @foreach($availabilityData as $entry)

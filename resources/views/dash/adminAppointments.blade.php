@@ -1,5 +1,6 @@
 @include('layouts.alerts')
-
+<div class="card shadow-sm mb-4">
+  <div class="card-body bg-white">
 <p>Session company ID: {{ session('company_uni_id') }}</p>
 
 @if($list->isEmpty())
@@ -22,10 +23,10 @@
         @foreach($list as $item)
           <tr>
             <td>{{ $loop->iteration }}</td>
-            <td>{{ $item->customer_name ?? '(Tanımsız)' }}</td>
-            <td>{{ $item->email         ?? '(Tanımsız)' }}</td>
-            <td>{{ $item->service_name   ?? '(Tanımsız)' }}</td>
-            <td>{{ $item->staff_name     ?? '(Tanımsız)' }}</td>
+            <td>{{ $item->customer_name ?? ' ' }}</td>
+            <td>{{ $item->email         ?? ' ' }}</td>
+            <td>{{ $item->service_name   ?? ' ' }}</td>
+            <td>{{ $item->staff_name     ?? ' ' }}</td>
             <td>{{ \Carbon\Carbon::parse($item->scheduled_time)->format('d M Y H:i') }}</td>
             <td class="text-capitalize">{{ $item->status }}</td>
             <td>
@@ -46,4 +47,5 @@
       </tbody>
     </table>
   @endif
-
+ </div>
+ </div>

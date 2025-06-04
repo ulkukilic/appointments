@@ -14,7 +14,7 @@ use Carbon\Carbon;                           // Tarih/saat işlemleri için
 use App\Mail\ResetPasswordMail;              // Şifre sıfırlama postası
 use App\Mail\AppointmentRequestedMail;
 use App\Mail\AppointmentStatusMail;   
-
+use Illuminate\Validation\ValidationException;
 
 class BookingController extends Controller
 {
@@ -91,7 +91,7 @@ class BookingController extends Controller
                     'slot_id'              => $request->slot_id,
                     'scheduled_time'       => $slot->start_time,
                     'status'               => 'pending', // beklemede
-                    'created_at'           => now(),
+                    
                 ]);
 
                 
@@ -225,21 +225,33 @@ public function updateStaff(Request $request, $id)
         return back()->with('success','Çalışan silindi.');
     }
 
-    public function addAvailabilitySlot(Request $request)
+   public function addAvailabilitySlot(Request $request)
 {
     $request->validate([
         'staff_member_uni_id' => 'required|exists:staff_members,staff_member_uni_id',
         'start_time' => 'required|date',
         'end_time' => 'required|date|after:start_time',
+        'status'     => 'required|in:available,unavailable',
     ]);
+
+    // Güvenlik kontrolü
+    $companyId = session('company_uni_id');
+
+    $staff = DB::table('staff_members')
+        ->where('staff_member_uni_id', $request->staff_member_uni_id)
+        ->where('company_uni_id', $companyId)
+        ->first();
+
+    if (!$staff) {
+        abort(403, 'Bu personele slot ekleme yetkiniz yok.');
+    }
 
     DB::table('availability_slots')->insert([
         'staff_member_uni_id' => $request->staff_member_uni_id,
         'start_time' => $request->start_time,
         'end_time' => $request->end_time,
-        'status' => 'available',
-        'created_at' => now(),
-        'updated_at' => now()
+        'status' => $request->status,
+       
     ]);
 
     return redirect()->back()->with('success', 'Yeni slot başarıyla eklendi.');
@@ -400,7 +412,7 @@ public function updateStaff(Request $request, $id)
         ]);
   }
 
-public function updateAvailabilitySlot(Request $request, $slotId)
+public function updateAvailabilitySlot(Request $request,int $slotId)
 {
          $companyId = session('company_uni_id');
         // Gelen istekteki 'status' alanını 'available' veya 'unavailable' olarak doğrular
@@ -417,16 +429,16 @@ public function updateAvailabilitySlot(Request $request, $slotId)
                 ->first();
 
         // Slot bulunamazsa yetkisiz erişim olarak işlem yapar
-        if (! $slot) {
-            abort(403);
-        }
+       // if (! $slot) {
+         //   abort(403);
+        //}
 
         // Slot durumunu gelen değerle günceller
         DB::table('availability_slots')
                 ->where('slot_id', $slotId)
                 ->update([
                     'status'     => $request->status,
-                    'updated_at' => now(),
+                    
                 ]);
 
         // Geri dönerek başarı mesajı verir
