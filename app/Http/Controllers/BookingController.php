@@ -231,7 +231,7 @@ public function updateStaff(Request $request, $id)
         'staff_member_uni_id' => 'required|exists:staff_members,staff_member_uni_id',
         'start_time' => 'required|date',
         'end_time' => 'required|date|after:start_time',
-        'status'     => 'required|in:available,unavailable',
+        // 'status'     => 'required|in:available,unavailable',
     ]);
 
     // Güvenlik kontrolü
@@ -250,7 +250,7 @@ public function updateStaff(Request $request, $id)
         'staff_member_uni_id' => $request->staff_member_uni_id,
         'start_time' => $request->start_time,
         'end_time' => $request->end_time,
-        'status' => $request->status,
+        // 'status' => $request->status,
        
     ]);
 
