@@ -1,65 +1,92 @@
-{{-- Admin – Müsaitlik Yönetimi Sayfası --}}
-@extends('layouts.app')
+@include('layouts.alerts')
 
-@section('title', 'Admin - Müsaitlik Yönetimi')
-@section('page_title', 'Personel Müsaitlik Yönetimi')
+@foreach($availabilityData as $entry)
+  {{-- Personel Bilgisi --}}
+  <h5>{{ $entry['staff']->full_name }} 
+      ({{ $entry['staff']->experience_level }})
+  </h5>
 
-@section('content')
-  @include('layouts.alerts')
+  {{-- Yeni Slot Ekleme Formu --}}
+  <form 
+    method="POST" 
+    action="{{ route('admin.availability.add') }}" 
+    class="row row-cols-lg-auto g-3 align-items-center mb-3"
+  >
+    @csrf
+    <input type="hidden" name="staff_member_uni_id" value="{{ $entry['staff']->staff_member_uni_id }}">
 
-  @foreach($availabilityData as $entry)
-    {{-- Personel Bilgisi --}}
-    <h5>{{ $entry['staff']->full_name }} 
-        ({{ $entry['staff']->experience_level }})
-    </h5>
+    <div class="col">
+      <label class="form-label">Başlangıç</label>
+      <input type="datetime-local" name="start_time" class="form-control" required>
+    </div>
 
-    <table class="table table-bordered table-hover">
-      <thead class="table-light">
+    <div class="col">
+      <label class="form-label">Bitiş</label>
+      <input type="datetime-local" name="end_time" class="form-control" required>
+    </div>
+
+    <div class="col">
+      <label class="form-label">Durum</label>
+      <select name="status" class="form-select" required>
+        <option value="">Seçiniz</option>
+        <option value="available">Available</option>
+        <option value="unavailable">Unavailable</option>
+      </select>
+    </div>
+
+    <div class="col">
+      <label class="form-label d-block">&nbsp;</label>
+      <button type="submit" class="btn btn-success">Yeni Slot Ekle</button>
+    </div>
+  </form>
+
+  {{-- Slot Listesi Tablosu --}}
+  <table class="table table-bordered table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Slot ID</th>
+        <th>Başlangıç</th>
+        <th>Bitiş</th>
+        <th>Servis Adı</th>
+        <th>Süre (dk)</th>
+        <th>Durum</th>
+        <th>Güncelle</th>
+      </tr>
+    </thead>
+    <tbody>
+      @if($entry['slots']->isEmpty())
         <tr>
-          <th>Slot ID</th>
-          <th>Başlangıç</th>
-          <th>Bitiş</th>
-          <th>Servis Adı</th>
-          <th>Süre (dk)</th>
-          <th>Durum</th>
-          <th>Güncelle</th>
+          <td colspan="7" class="text-center text-muted">
+            Bu personelin kayıtlı slotu yok.
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        @if($entry['slots']->isEmpty())
+      @else
+        @foreach($entry['slots'] as $slot)
           <tr>
-            <td colspan="7" class="text-center text-muted">
-              Bu personelin kayıtlı slotu yok.
+            <td>{{ $slot->slot_id }}</td>
+            <td>{{ \Carbon\Carbon::parse($slot->start_time)->format('d M Y H:i') }}</td>
+            <td>{{ \Carbon\Carbon::parse($slot->end_time)->format('d M Y H:i') }}</td>
+            <td>{{ $slot->service_name ?? '—' }}</td>
+            <td>{{ $slot->standard_duration ?? '—' }}</td>
+            <td>{{ ucfirst($slot->status) }}</td>
+            <td>
+              <form 
+                method="POST" 
+                action="{{ route('admin.availability.update', $slot->slot_id) }}"
+                class="d-flex align-items-center"
+              >
+                @csrf
+                <select name="status" class="form-select form-select-sm me-2">
+                  <option value="available"   {{ $slot->status === 'available'   ? 'selected' : '' }}>Available</option>
+                  <option value="unavailable" {{ $slot->status === 'unavailable' ? 'selected' : '' }}>Unavailable</option>
+                  <option value="booked"      {{ $slot->status === 'booked'      ? 'selected' : '' }}>Booked</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary">Güncelle</button>
+              </form>
             </td>
           </tr>
-        @else
-          @foreach($entry['slots'] as $slot)
-            <tr>
-              <td>{{ $slot->slot_id }}</td>
-              <td>{{ \Carbon\Carbon::parse($slot->start_time)->format('d M Y H:i') }}</td>
-              <td>{{ \Carbon\Carbon::parse($slot->end_time)->format('d M Y H:i') }}</td>
-              <td>{{ $slot->service_name ?? '—' }}</td>
-              <td>{{ $slot->standard_duration ?? '—' }}</td>
-              <td>{{ ucfirst($slot->status) }}</td>
-              <td>
-                <form 
-                  method="POST" 
-                  action="{{ route('admin.availability.update', $slot->slot_id) }}"
-                  class="d-flex align-items-center"
-                >
-                  @csrf
-                  <select name="status" class="form-select form-select-sm me-2">
-                    <option value="available"   {{ $slot->status === 'available'   ? 'selected' : '' }}>Available</option>
-                    <option value="unavailable" {{ $slot->status === 'unavailable' ? 'selected' : '' }}>Unavailable</option>
-                    <option value="booked"      {{ $slot->status === 'booked'      ? 'selected' : '' }}>Booked</option>
-                  </select>
-                  <button type="submit" class="btn btn-sm btn-primary">Güncelle</button>
-                </form>
-              </td>
-            </tr>
-          @endforeach
-        @endif
-      </tbody>
-    </table>
-  @endforeach
-@endsection
+        @endforeach
+      @endif
+    </tbody>
+  </table>
+@endforeach

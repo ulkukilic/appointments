@@ -43,7 +43,7 @@ Route::get('/clrall', function () {
     Route::prefix('dash')->group(function () { // prefix ornegin 'dash' yazildi normalde getden sonra hepsi icin dash yazilmasi gerkeiyordu fakat simdi en basa das yazarak onu kisalltik uzun projelerde isine yarayabilir
           
           Route::get('customer', fn() => view('dash.customer'))->name('dash.customer')->middleware('userType:1');
-          Route::get('admin', fn() => view('dash.admin'))->name('dash.admin')->middleware('userType:2');
+          Route::get('admin', [BookingController::class, 'adminDashboard'])->name('dash.admin')->middleware('userType:2');
           Route::get('superadmin', fn() => view('dash.superAdmin'))->name('dash.superadmin')->middleware('userType:3');
           
       });
@@ -73,7 +73,9 @@ Route::get('/clrall', function () {
 
     Route::get('availability', 'showAvailabilityManagement')->name('admin.availability.index');
     Route::post('availability/{slotId}', 'updateAvailabilitySlot')->name('admin.availability.update');
- });
+    Route::post('availability/add', 'addAvailabilitySlot')->name('admin.availability.add');
+
+  });
 
   // — Süperadmin rotaları (user_type = 3)
     Route::prefix('dash/superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {

@@ -1,15 +1,9 @@
-{{-- resources/views/dash/adminAppointments.blade.php --}}
-@extends('layouts.app')
+@include('layouts.alerts')
 
-@section('title', 'Admin - Randevu Yönetimi')
-@section('page_title', 'Randevu Listesi')
-
-@section('content')
-  @include('layouts.alerts')
 <p>Session company ID: {{ session('company_uni_id') }}</p>
 
-  @if($list->isEmpty())
-    <p class="text-muted">Henüz bu şirkete ait randevu yok.</p>
+@if($list->isEmpty())
+  <p class="text-muted">Henüz bu şirkete ait randevu yok.</p>
   @else
     <table class="table table-striped table-hover">
       <thead class="table-light">
@@ -52,4 +46,4 @@
       </tbody>
     </table>
   @endif
-@endsection
+

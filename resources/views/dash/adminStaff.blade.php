@@ -1,58 +1,33 @@
-{{-- Admin – Personel Listesi & Ekleme --}}
-@extends('layouts.app')
+@include('layouts.alerts')
 
-@section('title', 'Admin - Personel Yönetimi')
-@section('page_title', 'Personel Listesi')
+@foreach($availabilityData as $entry)
+  {{-- Personel Bilgisi --}}
+  <h5>{{ $entry['staff']->full_name }} 
+      ({{ $entry['staff']->experience_level }})
+  </h5>
 
-@section('content')
-  @include('layouts.alerts')
+  {{-- Yeni Slot Ekleme Formu --}}
+  <form 
+    method="POST" 
+    action="{{ route('admin.availability.add') }}" 
+    class="row row-cols-lg-auto g-3 align-items-center mb-3"
+  >
+    @csrf
+    <input type="hidden" name="staff_member_uni_id" value="{{ $entry['staff']->staff_member_uni_id }}">
 
-  {{-- Personel Ekleme Butonu --}}
-  <div class="mb-3">
-    <a href="{{ route('admin.staff.edit', 0) }}" class="btn btn-success">
-      Yeni Personel Ekle
-    </a>
-  </div>
+    <div class="col">
+      <label class="form-label">Başlangıç</label>
+      <input type="datetime-local" name="start_time" class="form-control" required>
+    </div>
 
-  @if($staff->isEmpty())
-    <p class="text-muted">Henüz bu şirkete ait kişisel veri yok.</p>
-  @else
-    <table class="table table-striped table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Ad Soyad</th>
-          <th>Deneyim Seviyesi</th>
-          <th>İşlemler</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach($staff as $s)
-          <tr>
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $s->full_name }}</td>
-            <td>{{ $s->experience_level }}</td>
-            <td>
-              {{-- Düzenle Butonu --}}
-              <a href="{{ route('admin.staff.edit', $s->staff_member_uni_id) }}" class="btn btn-sm btn-warning me-1">
-                Düzenle
-              </a>
+    <div class="col">
+      <label class="form-label">Bitiş</label>
+      <input type="datetime-local" name="end_time" class="form-control" required>
+    </div>
 
-              {{-- Sil Butonu --}}
-              <form 
-                method="POST" 
-                action="{{ route('admin.staff.delete', $s->staff_member_uni_id) }}" 
-                class="d-inline-block"
-                onsubmit="return confirm('Bu çalışanı silmek istediğinizden emin misiniz?');"
-              >
-                @csrf
-                @method('DELETE')
-                <button class="btn btn-sm btn-danger">Sil</button>
-              </form>
-            </td>
-          </tr>
-        @endforeach
-      </tbody>
-    </table>
-  @endif
-@endsection
+    <div class="col">
+      <label class="form-label d-block">&nbsp;</label>
+      <button type="submit" class="btn btn-success">Yeni Slot Ekle</button>
+    </div>
+  </form>
+@endforeach

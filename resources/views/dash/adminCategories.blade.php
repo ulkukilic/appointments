@@ -1,11 +1,5 @@
-{{-- Admin – Kategori Yönetimi Sayfası --}}
-@extends('layouts.app')
+@include('layouts.alerts')
 
-@section('title', 'Admin - Kategori Yönetimi')
-@section('page_title', 'Kategori Listesi')
-
-@section('content')
-    @include('layouts.alerts')
 
     @if($categories->isEmpty())
         <p class="text-muted">Henüz kayıtlı bir kategori yok.</p>
@@ -26,14 +20,11 @@
                     <td>{{ $slug }}</td>
                     <td>{{ ucwords(str_replace('-', ' ', $slug)) }}</td>
                     <td>
-                        {{-- Bu slug’a tıklayıp, customer tarafında o kategoriye ait şirketleri görebiliriz --}}
-                        <a href="{{ route('categories.show', $slug) }}" class="btn btn-sm btn-primary">
-                            Göster
-                        </a>
+                    <a href="{{ route('categories.show', $slug) }}" class="btn btn-sm btn-primary">Göster</a>
                     </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
     @endif
-@endsection
+

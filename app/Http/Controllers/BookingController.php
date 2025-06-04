@@ -18,7 +18,8 @@ use App\Mail\AppointmentStatusMail;
 
 class BookingController extends Controller
 {
-   
+
+  
     public function editCompany($companyId) //Superadmin – şirket düzenleme formu
     {
         $company = DB::table('companies')->where('company_uni_id', $companyId)->first(); // companies degiskeni tarafindan , company_uni_id degerini cekiyoruz
@@ -224,20 +225,109 @@ public function updateStaff(Request $request, $id)
         return back()->with('success','Çalışan silindi.');
     }
 
+    public function addAvailabilitySlot(Request $request)
+{
+    $request->validate([
+        'staff_member_uni_id' => 'required|exists:staff_members,staff_member_uni_id',
+        'start_time' => 'required|date',
+        'end_time' => 'required|date|after:start_time',
+    ]);
+
+    DB::table('availability_slots')->insert([
+        'staff_member_uni_id' => $request->staff_member_uni_id,
+        'start_time' => $request->start_time,
+        'end_time' => $request->end_time,
+        'status' => 'available',
+        'created_at' => now(),
+        'updated_at' => now()
+    ]);
+
+    return redirect()->back()->with('success', 'Yeni slot başarıyla eklendi.');
+}
+
+
+
+  public function adminDashboard()
+{
+            $companyId = session('company_uni_id');
+
+            // 1. Randevu listesi
+            $list = DB::table('appointments as a')
+                ->leftJoin('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')
+                ->leftJoin('services as s', 'a.service_id', '=', 's.service_id')
+                ->leftJoin('staff_members as sm', 'a.staff_member_uni_id', '=', 'sm.staff_member_uni_id')
+                ->where('a.company_uni_id', $companyId)
+                ->select(
+                    'a.appointment_id',
+                    'a.scheduled_time',
+                    'a.status',
+                    'u.full_name as customer_name',
+                    'u.email',
+                    's.name as service_name',
+                    'sm.full_name as staff_name'
+                )
+                ->orderBy('a.created_at', 'desc')
+                ->get();
+
+            // 2. Kategoriler
+            $categories = DB::table('companies')
+                ->where('company_uni_id', $companyId)
+                ->pluck('category')
+                ->unique()
+                ->values();
+
+            // 3. Personeller
+            $staff = DB::table('staff_members')
+                ->where('company_uni_id', $companyId)
+                ->orderBy('full_name')
+                ->get();
+
+            // 4. Müsaitlik
+            $availabilityData = $staff->map(function($s) {
+                $slots = DB::table('availability_slots as av')
+                    ->leftJoin('staff_services as ss', 'av.staff_member_uni_id', '=', 'ss.staff_member_uni_id')
+                    ->leftJoin('services as sv', 'ss.service_id', '=', 'sv.service_id')
+                    ->where('av.staff_member_uni_id', $s->staff_member_uni_id)
+                    ->orderBy('av.start_time')
+                    ->select(
+                        'av.slot_id', 'av.start_time', 'av.end_time', 'av.status',
+                        'ss.service_id', 'sv.name as service_name', 'sv.standard_duration'
+                    )
+                    ->get();
+
+                return ['staff' => $s, 'slots' => $slots];
+            });
+
+            // Hepsini tek view'e aktar
+            return view('dash.admin', compact('list', 'categories', 'staff', 'availabilityData'));
+}
+
   
-         public function adminCategories()
-        {
-             $categories = DB::table('companies')
-            ->select('category')
-            ->distinct()
-            ->pluck('category');  // Sadece ‘slug’ değerlerini (ör: ['hospital','barber',...]) çekiyoruz.
+    public function adminCategories()
+ {
+             $companyId = session('company_uni_id');
+            $userType = session('user_type_id');
+
+            // Superadmin değilse sadece kendi şirketlerinin kategorilerini görsün
+            if ($userType == 2) 
+            {
+                $categories = DB::table('companies')
+                    ->where('owner_user_uni_id', session('user_uni_id')) // sadece kendi şirketleri
+                    ->pluck('category')
+                    ->unique()
+                    ->values();
+            } 
+            else 
+            {
+                // yedek: tüm kategoriler (superadmin veya fallback)
+                $categories = DB::table('companies')->pluck('category')->unique()->values();
+            }
 
             return view('dash.adminCategories', compact('categories'));
-        }
-
-
+  }
+      
       public function updateStatus(Request $request, $id)
-  {
+   {
        $status = $request->input('status');
        $email  = $request->input('email');
 
@@ -312,6 +402,7 @@ public function updateStaff(Request $request, $id)
 
 public function updateAvailabilitySlot(Request $request, $slotId)
 {
+         $companyId = session('company_uni_id');
         // Gelen istekteki 'status' alanını 'available' veya 'unavailable' olarak doğrular
         $request->validate([
             'status' => 'required|in:available,unavailable'
@@ -352,8 +443,6 @@ public function updateAvailabilitySlot(Request $request, $slotId)
     if ($userTypeId == 2 && !$companyId) {
         abort(403, 'Şirket bilgisi bulunamadı.');
     }
-
-
     // Şirkete ait tüm randevuları al, müşteri, hizmet ve personel bilgilerini ilişkilendir
     $list = DB::table('appointments as a')
         ->leftJoin('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')       // Müşteri bilgisi
