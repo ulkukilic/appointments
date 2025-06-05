@@ -534,37 +534,54 @@ public function updateAvailabilitySlot(Request $request,int $slotId)
      }
 
     
-  public function adminAppointments()
-  {
-        // Oturumdan şirket ID'sini al; yoksa 403 hatası döndür
-        $companyId = session('company_uni_id');
-        $userTypeId = session('user_type_id');
+public function adminAppointments()
+{
+    // Oturumdan user ID ve userType al
+    $userId = session('user_uni_id');
+    $userTypeId = session('user_type_id');
 
-        // Eğer adminse ve şirket ID'si yoksa erişimi reddet
-        if ($userTypeId == 2 && !$companyId) {
-            abort(403, 'Şirket bilgisi bulunamadı.');
-        }
-        // Şirkete ait tüm randevuları al, müşteri, hizmet ve personel bilgilerini ilişkilendir
+    // Admin ise, userId mutlaka olmalı
+    if ($userTypeId == 2 && !$userId) {
+        abort(403, 'Şirket bilgisi bulunamadı.');
+    }
+
+    // Admin’in sahip olduğu tüm company_uni_id’leri alıyoruz
+    $companyIds = DB::table('company_owners')
+        ->where('user_uni_id', $userId)
+        ->pluck('company_uni_id')
+        ->toArray();
+
+    // Eğer Admin’in hiç şirketi yoksa boş liste
+    if (empty($companyIds)) 
+    {
+        $list = collect();
+    } 
+    else
+     {
+        // Birden fazla şirkete ait randevuları, aynı anda ilgili tablolarla JOIN ederek alıyoruz
         $list = DB::table('appointments as a')
-            ->leftJoin('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')       // Müşteri bilgisi
-            ->leftJoin('services as s', 'a.service_id', '=', 's.service_id')      // Hizmet bilgisi
-            ->leftJoin('staff_members as sm', 'a.staff_member_uni_id', '=', 'sm.staff_member_uni_id') // Personel bilgisi
-            ->where('a.company_uni_id', $companyId)                                // Yalnızca bu şirkete ait randevular
+            ->leftJoin('users as u', 'a.user_uni_id', '=', 'u.user_uni_id')
+            ->leftJoin('services as s', 'a.service_id', '=', 's.service_id')
+            ->leftJoin('staff_members as sm', 'a.staff_member_uni_id', '=', 'sm.staff_member_uni_id')
+            ->leftJoin('companies as c', 'a.company_uni_id', '=', 'c.company_uni_id')
+            ->where('a.company_uni_id', $companyId)
             ->select(
-                'a.appointment_id',       // Randevu ID'si
-                'a.scheduled_time',       // Planlanan randevu zamanı
-                'a.status',               // Randevu durumu (örn. pending, confirmed)
-                'u.full_name as customer_name', // Müşteri adı
-                'u.email',                // Müşteri e-posta adresi
-                's.name as service_name', // Hizmet adı
-                'sm.full_name as staff_name' // Personel adı
-        )
-            ->orderBy('a.created_at', 'desc') // Yeni randevular en üstte olacak şekilde sırala
+                'a.appointment_id',
+                'c.name as company_name',       
+                'a.scheduled_time',
+                'a.status',
+                'u.full_name as customer_name',
+                'u.email',
+                's.name as service_name',
+                'sm.full_name as staff_name'
+            )
+            ->orderBy('a.created_at', 'desc')
             ->get();
+    }
 
-    // 'dash.adminAppointments' görünümüne randevu listesi verisini gönder
+    // Listeyi view’e gönder
     return view('dash.adminAppointments', compact('list'));
-  }
+}
 
     public function deleteUser($userId)
     {

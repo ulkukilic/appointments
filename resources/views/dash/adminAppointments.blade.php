@@ -10,6 +10,7 @@
       <thead class="table-light">
         <tr>
           <th>#</th>
+          <th>Şirket</th> 
           <th>Müşteri</th>
           <th>Email</th>
           <th>Hizmet</th>
@@ -24,6 +25,7 @@
         @foreach($list as $item)
           <tr class="bg-white text-dark">
             <td>{{ $loop->iteration }}</td>
+             <td>{{ $item->company_name ?? ' '}}</td>
             <td>{{ $item->customer_name ?? ' ' }}</td>
             <td>{{ $item->email         ?? ' ' }}</td>
             <td>{{ $item->service_name   ?? ' ' }}</td>
