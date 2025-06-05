@@ -1,48 +1,47 @@
 
 @include('layouts.alerts')
 
-@foreach($availabilityData as $entry)
-  {{-- Personel Bilgisi --}}
-  <h5>{{ $entry['staff']->full_name }} 
-      ({{ $entry['staff']->experience_level }})
-  </h5>
+@foreach($availabilityData as $entry) <!-- Her personel (staff) için döngü-->
+  <!---- Her personel (staff) için döngü -->
+  <h5>{{ $entry['staff']->full_name }}  ({{ $entry['staff']->experience_level }})</h5>
 
-  {{-- Yeni Slot Ekleme Formu --}}
+  <!-- Yeni Slot Ekleme Formu -->
   <form 
     method="POST" 
     action="{{ route('admin.availability.add') }}" 
     class="row row-cols-lg-auto g-3 align-items-center mb-3"
   >
     @csrf
+    <!--  Slot eklenecek personelin ID'si gizli alan olarak gönderilir-->
     <input type="hidden" name="staff_member_uni_id" value="{{ $entry['staff']->staff_member_uni_id }}">
 
-    <div class="col">
-      <label class="form-label">Başlangıç</label>
-      <input type="datetime-local" name="start_time" class="form-control" required>
+    <div class="col">  <!-- Başlangıç zamanı seçimi -->
+        <label class="form-label">Başlangıç</label>
+        <input type="datetime-local" name="start_time" class="form-control" required>
     </div>
 
-    <div class="col">
-      <label class="form-label">Bitiş</label>
-      <input type="datetime-local" name="end_time" class="form-control" required>
+    <div class="col">  <!-- Bitis zamanı seçimi -->
+        <label class="form-label">Bitiş</label>
+        <input type="datetime-local" name="end_time" class="form-control" required>
     </div>
 
-    <div class="col">
-      <label class="form-label">Durum</label>
-      <select name="status" class="form-select" required>
-        <option value="">Seçiniz</option>
-        <option value="available">Available</option>
-        <option value="unavailable">Unavailable</option>
-      </select>
+    <div class="col"> <!-- Slotun durumu (müsait/müsait değil) -->
+        <label class="form-label">Durum</label>
+        <select name="status" class="form-select" required>
+            <option value="">Seçiniz</option>
+            <option value="available">Available</option>
+            <option value="unavailable">Unavailable</option>
+        </select>
     </div>
 
-    <div class="col">
+    <div class="col"> <!-- Formu gönderme islemi ocon button -->
       <label class="form-label d-block">&nbsp;</label>
       <button type="submit" class="btn btn-success">Yeni Slot Ekle</button>
     </div>
   </form>
 
-  {{-- Slot Listesi Tablosu --}}
-  <table class="table table-bordered table-hover">
+  <!-- Mevcut slotları gösteren tablo -->
+  <table class="table table-bordered table-hover"> 
     <thead class="table-light">
       <tr>
         <th>Slot ID</th>
@@ -55,14 +54,14 @@
       </tr>
     </thead>
     <tbody>
-      @if($entry['slots']->isEmpty())
+      @if($entry['slots']->isEmpty())  <!-- Eğer personelin hiç slotu yoksa bilgi mesajı -->
         <tr>
           <td colspan="7" class="text-center text-muted">
             Bu personelin kayıtlı slotu yok.
           </td>
         </tr>
       @else
-        @foreach($entry['slots'] as $slot)
+        @foreach($entry['slots'] as $slot) <!-- Her personel (staff) için tablo -->
           <tr>
             <td>{{ $slot->slot_id }}</td>
             <td>{{ \Carbon\Carbon::parse($slot->start_time)->format('d M Y H:i') }}</td>
@@ -71,8 +70,8 @@
             <td>{{ $slot->standard_duration ?? '—' }}</td>
             <td>{{ ucfirst($slot->status) }}</td>
             <td>
-              <form 
-                method="POST" 
+              <!-- Slotun durumunu güncellemek için form -->
+              <form method="POST" 
                 action="{{ route('admin.availability.update', $slot->slot_id) }}"
                 class="d-flex align-items-center"
               >

@@ -19,34 +19,34 @@ class AuthController extends Controller
     
     public function showLoginForm() // giris formunu gosterir
     {
-        return view('auth.login');  // resources/views/auth/login.blade.php
+        return view('auth.login');  // resources/views/auth/login.blade.php    // acildigi gibi ilk once bu sayfaya yonlendiriliyor 
     }
 
     
     public function login(Request $request)// Login sayfasindaki Post islemlerini gorur 
     {
         
-        $credentials = $request->validate([  // veriler dogrulama islemi gerceklestirilir 
+        $credentials = $request->validate([  // veriler dogrulama islemi gerceklestirilir  email ve password dogru ise user tablosuna baglanir 
             'email'    => 'required|email',
             'password' => 'required',
         ]);
              $user=DB::table('users')
              ->Where('email',$request->email)
-             ->first(); // burda users tablosunda kaydi cekiyoruz
+             ->first(); // burda users tablosunda kaydi cekiyoruz girilen mail adresine uygun sekilde 
              
              if($user && Hash::check($request->password,$user->password)) //sifre kontrolu yapiliyor ve icerisinde ki degerler user tablosundaki degerlere bakiyor
              {
-                 // Bir kullanıcı birden fazla şirkete sahip olabilir; biz varsayılan olarak ilkini alıyoruz
+                // eger kullanici adminse hangi sirkete kayitli onun icin company_owners tablosuna giriliyor
                 $companyOwner = DB::table('company_owners')
-                ->where('user_uni_id', $user->user_uni_id)
-                ->first();
+                ->where('user_uni_id', $user->user_uni_id) // user tablsounun icerisinden user_uni_id kontrol ediliyor
+                ->first(); // ilk kaydi donduruyor yoksa null  kullanici yok olarak donucek 
 
-                session([
+                session([    // kullanicinin biglilerini oturum sureci boyunca kayitli kalmasi icin session icerisinde kayitli kalmasi gereken bilgiler ekleniyor
                    'user_uni_id'    => $user->user_uni_id,
                    'user_type_id'   => $user->user_type_id,
                    'full_name'      => $user->full_name,
                    'email'          =>  $user->email,
-                    'company_uni_id' => $companyOwner ? $companyOwner->company_uni_id : null,
+                   'company_uni_id' => $companyOwner ? $companyOwner->company_uni_id : null,
                 ]);
 
                   // password dogru ve bilgilerde eslaesme varsa o zaman user_type devreye giriyor ve logindan sonra gonderilmesi gereken panel sayfasina yonlendiriyor
@@ -66,7 +66,7 @@ class AuthController extends Controller
 
         return back()
             ->withErrors(['email' => 'The e-mail or password is incorrect.'])
-            ->withInput($request->only('email'));
+            ->withInput($request->only('email')); // yanlis sifre ve mail dediginde mail adresini tekrar yazmamasi icin kullaniciya email yazili bir sekilde geri doner
     }
              
 
@@ -111,14 +111,14 @@ class AuthController extends Controller
             'password'=>'required|min:8|confirmed' // min 8 karakterli olmali ve password_confirmation alani ile eslesmeli 
         ])->validate();
 
-        $validated = $request->only(['name', 'surname','email', 'password']);
+        $validated = $request->only(['name', 'surname','email', 'password']); // formda yazilan yerlerden sadece bu alanlari tutuyoruz 
 
-        // yeni kullanici olsutururken 
+        // yeni kullanici olsutururken  dizi icerisinde kullanimlarina uygun sekilde sql ile eslestiriyor
         DB::table('users')->insert([
             'full_name' => $validated['name']. ' ' . $validated['surname'],        // formdaki name alanı full_name sutununa kaydedilir
             'email'     => $validated['email'],       // formdaki email alanı email sutununa kaydedilir
             'password'  => Hash::make($validated['password']), // plain password bcrypt ile hash'lenir
-            'user_type_id'  => 1,       ////// yeni kayıtta default müşteri tipi (1) atandı
+            'user_type_id'  => 1,       ////// yeni kayıtta default müşteri tipi (1) atandı otomtik olarak 
             'created_at'=> Carbon::now(),
             
         ]);
@@ -169,7 +169,7 @@ class AuthController extends Controller
     }
 
     
-    public function reset(Request $request) /** 4) Yeni şifreyi kaydeder */
+    public function reset(Request $request) /**  Yeni şifreyi kaydeder */
     {
     
         $request->validate([          // gerekli alanlari mail - token - sifre gibi alanalri dogrular
@@ -188,8 +188,8 @@ class AuthController extends Controller
 
         
         DB::table('users')->where('email', $request->email)->update(['password'=>Hash::make($request->password)]); // Şifre güncelleme yapar
-        DB::table('password_resets')->where('email',$request->email)->delete();// Token’ı sil
-        return redirect()->route('login.form')->with('success','Şifreniz başarıyla güncellendi.');
+        DB::table('password_resets')->where('email',$request->email)->delete();// Token’ı siler
+        return redirect()->route('login.form')->with('success','Şifreniz başarıyla güncellendi.'); // Login sayfasina yonlendirir ve basari mesaji gonderiri
     }
 }
 

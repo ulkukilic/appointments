@@ -3,7 +3,7 @@
   <div class="card-body bg-white">
 <p>Session company ID: {{ session('company_uni_id') }}</p>
 
-@if($list->isEmpty())
+@if($list->isEmpty()) <!--Eğer randevu listesi boşsa kullanıcıya bilgi verir -->
   <p class="text-muted">Henüz bu şirkete ait randevu yok.</p>
   @else
     <table class="table table-striped table-hover">
@@ -20,6 +20,7 @@
         </tr>
       </thead>
       <tbody>
+      <!--Her randevu için bir tablo satırı oluştur -->
         @foreach($list as $item)
           <tr>
             <td>{{ $loop->iteration }}</td>
@@ -30,15 +31,20 @@
             <td>{{ \Carbon\Carbon::parse($item->scheduled_time)->format('d M Y H:i') }}</td>
             <td class="text-capitalize">{{ $item->status }}</td>
             <td>
+              <!-- Durum güncelleme formu -->
              <form method="POST" action="{{ route('admin.appointments.update', $item->appointment_id) }}">
 
                 @csrf
+                <!-- Gerekirse e-posta gönderimi için e-mail bilgisi -->
                 <input type="hidden" name="email" value="{{ $item->email }}">
+                
+                <!-- Durum seçimi (Beklemede, Onaylandı, İptal) -->
                 <select name="status" class="form-select form-select-sm me-2">
-                  <option value="pending"   {{ $item->status === 'pending'   ? 'selected' : '' }}>Beklemede</option>
-                  <option value="confirmed" {{ $item->status === 'confirmed' ? 'selected' : '' }}>Onaylandı</option>
-                  <option value="cancelled" {{ $item->status === 'cancelled' ? 'selected' : '' }}>İptal</option>
+                    <option value="pending"   {{ $item->status === 'pending'   ? 'selected' : '' }}>Beklemede</option>
+                    <option value="confirmed" {{ $item->status === 'confirmed' ? 'selected' : '' }}>Onaylandı</option>
+                    <option value="cancelled" {{ $item->status === 'cancelled' ? 'selected' : '' }}>İptal</option>
                 </select>
+                
                 <button type="submit" class="btn btn-sm btn-primary">Güncelle</button>
               </form>
             </td>

@@ -25,6 +25,16 @@
       <input type="datetime-local" name="end_time" class="form-control" required>
     </div>
 
+     <div class="col">
+         <label class="form-label">Durum</label>
+         <select name="status" class="form-select" required>
+          <option value="">Seçiniz</option>
+          <option value="available">Available</option>
+          <option value="booked">Booked</option>
+          <option value="unavailable">Unavailable</option>
+        </select>
+    </div>
+    
     <div class="col">
       <label class="form-label d-block">&nbsp;</label>
       <button type="submit" class="btn btn-success">Yeni Slot Ekle</button>
