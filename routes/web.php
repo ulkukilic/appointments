@@ -54,7 +54,8 @@ Route::get('/clrall', function () {
           Route::get('categories/{category}/companies/{company}', 'showCompanyAvailability')->name('categories.company.availability');
           Route::post('appointment/book', 'book')->middleware('userType:1')->name('appointment.book'); // Randevu oluşturma (yalnızca müşteri)
           Route::get('appointment/book', fn() => redirect()->route('dash.customer')); // GET isteği atılırsa müşteri dash'e yönlendir
-
+          Route::post('reviews/{company}', 'storeReview')->middleware('userType:1')->name('reviews.store');
+    
      });
 
     // — admin rotaları (user_type = 2)

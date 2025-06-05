@@ -14,7 +14,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($categories as $slug)
+                @foreach($categories as $slug)   <!-- Her kategori için bir satır oluştur -->
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $slug }}</td>

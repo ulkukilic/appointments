@@ -19,17 +19,16 @@
         {{ isset($staff) ? 'Personel Düzenle' : 'Yeni Personel Ekle' }}
       </h5>
     </div>
+       <!-- Personel güncelleme veya ekleme formu -->
     <div class="card-body bg-white">
       <form 
         method="POST"
         action="{{ isset($staff) 
                    ? route('admin.staff.update', $staff->staff_member_uni_id) 
                    : route('admin.staff.add') 
-                 }}"
-      >
+                 }}">
         @csrf
-     
-        
+        <!-- AD Soyad girisi -->
         <div class="mb-3">
           <label for="full_name" class="form-label">Ad Soyad</label>
           <input 
@@ -44,7 +43,8 @@
             <div class="invalid-feedback">{{ $message }}</div>
           @enderror
         </div>
-
+        
+        <!-- Deneyim seviyesi girişi -->
         <div class="mb-3">
           <label for="experience_level" class="form-label">Deneyim Seviyesi</label>
           <input 

@@ -68,10 +68,32 @@ class BookingController extends Controller
 
         return ['staff' => $s, 'slots' => $slots];
      });
-
+   
+     $reviews = DB::table('reviews')
+            ->where('company_uni_id', $companyId)
+            ->join('users', 'reviews.user_uni_id', '=', 'users.user_uni_id')
+            ->select(
+                    'reviews.review_id',
+                    'reviews.rating',
+                    'reviews.comment',
+                    'reviews.created_at',
+                    'users.full_name as customer_name'
+                )
+            ->orderBy('reviews.created_at', 'desc')
+            ->get();
+             
+      
+      $services = DB::table('company_services as cs') // Şirkete ait hizmetleri çekiyoruz ki adminStaff.blade.php kullanabilsin
+            ->join('services as s', 'cs.service_id', '=', 's.service_id')
+            ->where('cs.company_uni_id', $companyId)
+            ->select('s.service_id', 's.name', 's.standard_duration')
+            ->get();
+            // Hepsini vire olarak aktar 
+     return view('dash.admin', compact('list', 'categories', 'staff', 'availabilityData', 'reviews', 'services' ));
+         
+    }
             
-    return view('dash.admin', compact('list', 'categories', 'staff', 'availabilityData'));// Admin panelinde hepsini bir arada göstermek.
-}  
+   
 
   public function adminCategories()
 {
@@ -244,8 +266,15 @@ class BookingController extends Controller
                 ->orderBy('full_name')
                 ->get();
 
-            // 'dash.adminStaff' görünümüne personel verilerini gönderir
-            return view('dash.adminStaff', compact('staff'));
+            // Şirkete ait hizmetleri çekiyoruz (hizmetin ID'si, adı ve standart süresiyle birlikte)
+            $services = DB::table('company_services as cs')
+                ->join('services as s', 'cs.service_id', '=', 's.service_id')
+                ->where('cs.company_uni_id', $companyId)
+                ->select('s.service_id', 's.name', 's.standard_duration')
+                ->get();
+
+            // 'dash.adminStaff' blade dosyasına hem personel hem de hizmet listesini gönderiyoruz
+            return view('dash.adminStaff', compact('staff', 'services'));
 
      }
             
@@ -552,5 +581,26 @@ public function updateAvailabilitySlot(Request $request,int $slotId)
         // Başarılıysa başarılı mesajı ile geri dön
         return back()->with('success', 'Kullanıcı başarıyla silindi.');
     }
+
+ 
+    public function storeReview(Request $request, $companyUniId) 
+ {
+        $request->validate([  // Kullanıcıdan gelen verileri doğrula (puan zorunlu, yorum opsiyonel)
+                'rating'  => 'required|integer|min:1|max:5',  // 1-5 arası puan zorunlu
+                'comment' => 'nullable|string',               // Yorum opsiyonel
+            ]);
+
+            
+         DB::table('reviews')->insert([ // reviews tablosuna yeni bir yorum ekle
+                'user_uni_id'       => session('user_uni_id'),     // Yorumu yapan kullanıcının ID'si (oturumdan alınır)
+                'company_uni_id'    => $companyUniId,              // Yorum yapılan şirketin ID'si
+                'rating'            => $request->rating,           // Kullanıcının verdiği puan
+                'comment'           => $request->comment,          // Kullanıcının yorumu
+                'created_at'        => now(),                      // Yorum eklenme tarihi
+            ]);
+
+            
+        return back()->with('success', 'Yorumunuz başarıyla eklendi.'); // İşlem başarılıysa, önceki sayfaya dönüp başarı mesajı göster
+}
 
 }
