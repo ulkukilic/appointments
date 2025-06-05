@@ -6,7 +6,7 @@
     @else
         <table class="table table-bordered table-hover">
             <thead class="table-light">
-                <tr>
+                 <tr class="bg-white text-dark">
                     <th>#</th>
                     <th>Slug</th>
                     <th>Okunabilir İsim</th>
@@ -15,7 +15,7 @@
             </thead>
             <tbody>
                 @foreach($categories as $slug)   <!-- Her kategori için bir satır oluştur -->
-                <tr>
+                 <tr class="bg-white text-dark">
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $slug }}</td>
                     <td>{{ ucwords(str_replace('-', ' ', $slug)) }}</td>

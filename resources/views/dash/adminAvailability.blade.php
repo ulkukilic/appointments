@@ -24,7 +24,30 @@
         <label class="form-label">Bitiş</label>
         <input type="datetime-local" name="end_time" class="form-control" required>
     </div>
-
+       
+    <div class="col">
+      <label class="form-label">Servis</label>
+      <select name="service_id" class="form-select" required>
+        <option value="" disabled selected>Servis Seçiniz</option>
+        @php
+          // Bu personelin atanmış olduğu servisleri çekiyoruz 
+          $staffServices = DB::table('staff_services as ss')
+                              ->join('services as s', 'ss.service_id', '=', 's.service_id')
+                              ->where('ss.staff_member_uni_id', $entry['staff']->staff_member_uni_id)
+                              ->select('s.service_id', 's.name', 's.standard_duration')
+                              ->get();
+        @endphp
+        @foreach($staffServices as $svc)
+          <option value="{{ $svc->service_id }}">
+            {{ $svc->name }} ({{ $svc->standard_duration }} dk)
+          </option>
+        @endforeach
+      </select>
+      @error('service_id')
+        <div class="text-danger mt-1">{{ $message }}</div>
+      @enderror
+    </div>
+    
     <div class="col"> <!-- Slotun durumu (müsait/müsait değil) -->
         <label class="form-label">Durum</label>
         <select name="status" class="form-select" required>

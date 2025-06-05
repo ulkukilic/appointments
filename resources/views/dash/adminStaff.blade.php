@@ -22,7 +22,7 @@
     <tbody>
       <!-- Her bir personel için satır -->
       @foreach($staff as $item)
-        <tr>
+        <tr class="bg-white text-dark">
           <td>{{ $loop->iteration }}</td>
           <td>{{ $item->full_name }}</td>
           <td>{{ $item->experience_level ?? '—' }}</td>
@@ -60,7 +60,7 @@
               <button type="submit" class="btn btn-sm btn-danger">Sil</button>
             </form>
           </td>
-        </tr>
+        </>
       @endforeach
     </tbody>
   </table>

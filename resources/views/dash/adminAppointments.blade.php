@@ -22,7 +22,7 @@
       <tbody>
       <!--Her randevu için bir tablo satırı oluştur -->
         @foreach($list as $item)
-          <tr>
+          <tr class="bg-white text-dark">
             <td>{{ $loop->iteration }}</td>
             <td>{{ $item->customer_name ?? ' ' }}</td>
             <td>{{ $item->email         ?? ' ' }}</td>

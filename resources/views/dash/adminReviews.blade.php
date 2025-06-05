@@ -11,7 +11,7 @@
   <!-- Yorumlar varsa tablo halinde göster -->
   <table class="table table-bordered table-hover">
     <thead class="table-light">
-      <tr>
+       <tr class="bg-white text-dark">
         <th>#</th>                  <!-- Yorumun sıra numarası -->
         <th>Müşteri Adı</th>        <!-- Yorumu yapan müşteri adı -->
         <th>Puan</th>               <!-- Verilen puan (1–5) -->
@@ -22,7 +22,7 @@
     <tbody>
       <!-- Her bir yorum için tablo satırı oluştur -->
       @foreach($reviews as $rev)
-        <tr>
+        <tr class="bg-white text-dark">
           <td>{{ $loop->iteration }}</td>
           <td>{{ $rev->customer_name }}</td>
           <td>{{ $rev->rating }}/5</td>
