@@ -16,7 +16,7 @@
             <!-- Kart tıklanınca uygun availability sayfasına yönlendir -->
             <a href="{{ route('categories.company.availability', ['category' => $category, 'company' => $company->company_uni_id]) }}">
               <img
-                src="{{ asset('panel/assets/images/' . $category . '/' . Str::slug($company->name) . '.jpg') }}"
+                src="{{ asset('panel/assets/images/' . Str::slug($company->name) . '.jpg') }}"
                 class="card-img-top"
                 alt="{{ $company->name }}"
               >

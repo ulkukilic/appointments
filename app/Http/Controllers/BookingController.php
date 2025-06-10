@@ -363,6 +363,18 @@ class BookingController extends Controller
             'experience_level'  => $request->experience_level,
             'created_at'        => now(),
         ]);
+         // Eğer formdan 'service_ids' alanı geldiyse (bir veya birden fazla hizmet seçildiyse)
+           if ($request->has('service_ids'))
+          {
+            foreach ($request->service_ids as $serviceId)// Her bir seçilen hizmet ID'si için döngü başlat
+            {
+                // staff_services tablosuna personelin hangi hizmetleri verdiğini ekle
+                DB::table('staff_services')->insert([
+                    'staff_member_uni_id' => $staffId,     // Hangi personele ait olduğunu belirt
+                    'service_id'          => $serviceId,   // Hangi hizmeti verdiğini belirt
+                ]);
+    }
+}
 
         return back()->with('success','Employee added. ');
     }
@@ -532,8 +544,42 @@ public function updateAvailabilitySlot(Request $request,int $slotId)
                 Mail::to(session('email'))->send(new AppointmentRequestedMail($appointmentId)); // Müşteriye onay e-postası gönder
                 return redirect()->route('dash.customer')->with('success', 'Randevu isteğiniz başarıyla alındı.');  // Müşteri paneline yönlendir ve başarı mesajı göster
      }
+     
+    public function updateStatus(Request $request, $appointmentId)
+{
+    $request->validate([
+        'status' => 'required|in:pending,confirmed,cancelled',
+        'email'  => 'nullable|email'
+    ]);
 
-    
+
+    $appointment = DB::table('appointments')// Randevunun var olup olmadığını kontrol et
+        ->where('appointment_id', $appointmentId)
+        ->first();
+
+    if (!$appointment) 
+    {
+        return back()->with('error', 'Randevu bulunamadı.');
+    }
+
+   
+    DB::table('appointments')  // Randevu statüsünü güncelle
+        ->where('appointment_id', $appointmentId)
+        ->update([
+            'status' => $request->status
+        ]);
+
+    // Eğer e-posta adresi varsa bildirim gönder
+    //if ($request->filled('email')) {
+    //  Mail::to($request->email)->send(new AppointmentStatusMail(
+    //     $appointmentId,
+    //     $request->status
+    //  ));
+    //}
+
+    return back()->with('success', 'Randevu durumu güncellendi.');
+}
+
 public function adminAppointments()
 {
     // Oturumdan user ID ve userType al
@@ -611,6 +657,7 @@ public function adminAppointments()
          DB::table('reviews')->insert([ // reviews tablosuna yeni bir yorum ekle
                 'user_uni_id'       => session('user_uni_id'),     // Yorumu yapan kullanıcının ID'si (oturumdan alınır)
                 'company_uni_id'    => $companyUniId,              // Yorum yapılan şirketin ID'si
+                'staff_member_uni_id' => $request->staff_member_uni_id,
                 'rating'            => $request->rating,           // Kullanıcının verdiği puan
                 'comment'           => $request->comment,          // Kullanıcının yorumu
                 'created_at'        => now(),                      // Yorum eklenme tarihi
