@@ -357,7 +357,7 @@ class BookingController extends Controller
         ]);
 
         
-        DB::table('staff_members')->insert([  // Admin: sadece kendi şirketine personel ekle
+       $staffId= DB::table('staff_members')->insertGetId([  // Admin: sadece kendi şirketine personel ekle
             'company_uni_id'    =>  session('company_uni_id'),
             'full_name'         => $request->full_name,
             'experience_level'  => $request->experience_level,
@@ -369,7 +369,7 @@ class BookingController extends Controller
             foreach ($request->service_ids as $serviceId)// Her bir seçilen hizmet ID'si için döngü başlat
             {
                 // staff_services tablosuna personelin hangi hizmetleri verdiğini ekle
-                DB::table('staff_services')->insert([
+                $staffId=DB::table('staff_services')->insert([
                     'staff_member_uni_id' => $staffId,     // Hangi personele ait olduğunu belirt
                     'service_id'          => $serviceId,   // Hangi hizmeti verdiğini belirt
                 ]);
