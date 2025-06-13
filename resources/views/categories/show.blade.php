@@ -1,39 +1,30 @@
-@extends('layouts.app')
-
+@extends('layouts.admin')
+@section('title', 'Kategori: ' . $category)
+@section('page_title', 'Kategori: ' . ucwords(str_replace('-', ' ', $category)))
 @section('content')
-  <!-- Başlık: Kategoriyi okunabilir hale çevirip gösteriyoruz -->
-  <h2>{{ ucwords(str_replace('-', ' ', $category)) }}</h2>
-
-  <!-- Eğer bu kategoriye ait hiç şirket yoksa bilgi mesajı göster -->
-  @if ($companies->isEmpty())
-    <p>Bu kategoride şirket bulunamadı.</p>
-  @else
-    <!-- Şirket kartları için responsive grid -->
-    <div class="row g-4">
-      @foreach($companies as $company)
-        <div class="col-6 col-md-4 col-lg-3">
-          <div class="card h-100">
-            <!-- Kart tıklanınca uygun availability sayfasına yönlendir -->
-            <a href="{{ route('categories.company.availability', ['category' => $category, 'company' => $company->company_uni_id]) }}">
-              <img
-                src="{{ asset('panel/assets/images/' . Str::slug($company->name) . '.jpg') }}"
-                class="card-img-top"
-                alt="{{ $company->name }}"
-              >
-            </a>
-
-            <!-- Kart başlığı: şirket adı -->
-            <div class="card-body text-center">
-              <a
-                href="{{ route('categories.company.availability', ['category' => $category, 'company' => $company->company_uni_id]) }}"
-                class="stretched-link text-decoration-none text-dark"
-              >
-                <h5 class="card-title">{{ $company->name }}</h5>
-              </a>
-            </div>
-          </div>
-        </div>
-      @endforeach
-    </div>
-  @endif
+@include('layouts.alerts')
+@if($companies->isEmpty())
+    <p class="text-muted">Bu kategoriye ait şirket yok.</p>
+@else
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Şirket Adı</th>
+                <th>İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($companies as $company)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $company->name }}</td>
+                    <td>
+                        <a href="{{ route('categories.company.availability', [$category, $company->company_uni_id]) }}" class="btn btn-info btn-sm">Müsaitlik</a>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
 @endsection

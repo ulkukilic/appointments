@@ -1,53 +1,45 @@
-@include('layouts.alerts')
-<div class="card shadow-sm mb-4">
-  <div class="card-body bg-white">
-<p>Session company ID: {{ session('company_uni_id') }}</p>
+<!-- resources/views/dash/adminAppointments.blade.php -->
+@extends('layouts.admin')
 
-@if($list->isEmpty()) <!--Eğer randevu listesi boşsa kullanıcıya bilgi verir -->
-  <p class="text-muted">Henüz bu şirkete ait randevu yok.</p>
+@section('title','Randevu Yönetimi')
+@section('page_title','Randevu Yönetimi')
+
+@section('content')
+  @if($list->isEmpty())
+    <p class="text-muted">Henüz bu şirkete ait randevu yok.</p>
   @else
-    <table class="table table-striped table-hover">
-      <thead class="table-light">
-        <tr>
-          <th>#</th>
-          <th>Şirket</th> 
-          <th>Müşteri</th>
-          <th>Email</th>
-          <th>Hizmet</th>
-          <th>Personel</th>
-          <th>Tarih / Saat</th>
-          <th>Durum</th>
-          <th>İşlem</th>
-        </tr>
-      </thead>
+    <table class="table table-striped">
+      <thead><tr>
+        <th>#</th><th>Müşteri</th><th>Email</th>
+        <th>Hizmet</th><th>Personel</th><th>Tarih/Saat</th>
+        <th>Durum</th><th>İşlem</th>
+      </tr></thead>
       <tbody>
-      <!--Her randevu için bir tablo satırı oluştur -->
         @foreach($list as $item)
-          <tr class="bg-white text-dark">
+          <tr>
             <td>{{ $loop->iteration }}</td>
-             <td>{{ $item->company_name ?? ' '}}</td>
-            <td>{{ $item->customer_name ?? ' ' }}</td>
-            <td>{{ $item->email         ?? ' ' }}</td>
-            <td>{{ $item->service_name   ?? ' ' }}</td>
-            <td>{{ $item->staff_name     ?? ' ' }}</td>
+            <td>{{ $item->customer_name }}</td>
+            <td>{{ $item->email }}</td>
+            <td>{{ $item->service_name }}</td>
+            <td>{{ $item->staff_name }}</td>
             <td>{{ \Carbon\Carbon::parse($item->scheduled_time)->format('d M Y H:i') }}</td>
-            <td class="text-capitalize">{{ $item->status }}</td>
             <td>
-              <!-- Durum güncelleme formu -->
-             <form method="POST" action="{{ route('admin.appointments.update', $item->appointment_id) }}">
-
+              <span class="badge 
+                {{ $item->status=='pending'   ? 'bg-warning text-dark' 
+                : ($item->status=='confirmed' ? 'bg-success' 
+                : ($item->status=='cancelled' ? 'bg-danger':'bg-secondary')) }}">
+                {{ ucfirst($item->status) }}
+              </span>
+            </td>
+            <td>
+              <form method="POST" action="{{ route('admin.appointments.update',$item->appointment_id) }}" class="d-flex">
                 @csrf
-                <!-- Gerekirse e-posta gönderimi için e-mail bilgisi -->
-                <input type="hidden" name="email" value="{{ $item->email }}">
-                
-                <!-- Durum seçimi (Beklemede, Onaylandı, İptal) -->
                 <select name="status" class="form-select form-select-sm me-2">
-                    <option value="pending"   {{ $item->status === 'pending'   ? 'selected' : '' }}>Beklemede</option>
-                    <option value="confirmed" {{ $item->status === 'confirmed' ? 'selected' : '' }}>Onaylandı</option>
-                    <option value="cancelled" {{ $item->status === 'cancelled' ? 'selected' : '' }}>İptal</option>
+                  <option value="pending"   {{ $item->status=='pending'? 'selected':'' }}>Beklemede</option>
+                  <option value="confirmed" {{ $item->status=='confirmed'? 'selected':'' }}>Onaylandı</option>
+                  <option value="cancelled" {{ $item->status=='cancelled'? 'selected':'' }}>İptal</option>
                 </select>
-                
-                <button type="submit" class="btn btn-sm btn-primary">Güncelle</button>
+                <button class="btn btn-sm btn-primary">Güncelle</button>
               </form>
             </td>
           </tr>
@@ -55,5 +47,4 @@
       </tbody>
     </table>
   @endif
- </div>
- </div>
+@endsection

@@ -1,6 +1,9 @@
-{{-- resources/views/dash/adminReviews.blade.php --}}
-@include('layouts.alerts')
 
+@extends('layouts.admin')
+@include('layouts.alerts')
+@section('title','Yorum Yönetimi')
+@section('page_title','Yorum Yönetimi')
+@section('content')
 <!-- Şirkete yapılan tüm yorumlar başlığı -->
 <h4>Şirkete Ait Yorumlar</h4>
 
@@ -33,3 +36,4 @@
     </tbody>
   </table>
 @endif
+@endsection

@@ -1,30 +1,29 @@
-@include('layouts.alerts')
+<!-- resources/views/dash/adminCategories.blade.php -->
+@extends('layouts.admin')
 
+@section('title','Kategori Yönetimi')
+@section('page_title','Kategori Yönetimi')
 
-    @if($categories->isEmpty())
-        <p class="text-muted">Henüz kayıtlı bir kategori yok.</p>
-    @else
-        <table class="table table-bordered table-hover">
-            <thead class="table-light">
-                 <tr class="bg-white text-dark">
-                    <th>#</th>
-                    <th>Slug</th>
-                    <th>Okunabilir İsim</th>
-                    <th>İşlem</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($categories as $slug)   <!-- Her kategori için bir satır oluştur -->
-                 <tr class="bg-white text-dark">
-                    <td>{{ $loop->iteration }}</td>
-                    <td>{{ $slug }}</td>
-                    <td>{{ ucwords(str_replace('-', ' ', $slug)) }}</td>
-                    <td>
-                    <a href="{{ route('categories.show', $slug) }}" class="btn btn-sm btn-primary">Göster</a>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-
+@section('content')
+  @if($companies->isEmpty())
+    <p class="text-muted">Henüz kayıtlı şirket yok.</p>
+  @else
+    <table class="table table-bordered">
+      <thead><tr>
+        <th>#</th><th>Şirket Adı</th><th>İşlem</th>
+      </tr></thead>
+      <tbody>
+        @foreach($companies as $company)
+          <tr>
+            <td>{{ $loop->iteration }}</td>
+            <td>{{ $company->name }}</td>
+            <td>
+              <a href="{{ route('categories.show',$company->category) }}"
+                 class="btn btn-sm btn-primary">Göster</a>
+            </td>
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
+  @endif
+@endsection

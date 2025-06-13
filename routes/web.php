@@ -61,7 +61,7 @@ Route::get('/clrall', function () {
     // — admin rotaları (user_type = 2)
     Route::prefix('admin')->middleware('userType:2')->controller(BookingController::class)->group(function () {   // sadece adminin yapabildigi kontroller
     Route::get('categories', 'adminCategories')->name('admin.categories.index');// Kategori yönetimi
-    
+    Route::get('reviews', 'adminReviews')->name('admin.reviews.index');
     Route::get('staff', 'listStaff')->name('admin.staff.index'); // Çalışan yönetimi ekleyebilir silebilir
     Route::post('staff', 'addStaff')->name('admin.staff.add');
     Route::get('staff/edit/{id}', 'editStaff')->name('admin.staff.edit');
@@ -81,12 +81,28 @@ Route::get('/clrall', function () {
 
   // — Süperadmin rotaları (user_type = 3)
     Route::prefix('dash/superadmin')->middleware('userType:3')->controller(BookingController::class)->group(function () {
-   
-    Route::get('appointments', 'adminAppointments')->name('superadmin.appointments'); // Tüm şirketlerin randevu yönetimini yapar
+    Route::get('appointments', 'superadminAppointments')->name('superadmin.appointments');
     Route::post('appointments/{id}', 'updateStatus')->name('superadmin.appointments.update');
+    Route::get('users', 'superadminUsers')->name('superadmin.users.index');
+    Route::delete('user/{id}', 'deleteUser')->name('superadmin.user.delete'); // Kullanıcı yönetimi
+    Route::get('users/create',     'superadminCreateUser')->name('superadmin.users.create');
+    Route::post('users',           'superadminStoreUser')->name('superadmin.users.store');
+    Route::get('users/{id}/edit',  'superadminEditUser')->name('superadmin.users.edit');
+    Route::put('users/{id}',       'superadminUpdateUser')->name('superadmin.users.update');
     Route::delete('company/{id}', 'deleteCompany')->name('superadmin.company.delete'); // Şirket yönetimi tum sirketleri silebilir
+    Route::get('companies', 'superadminCompanies') ->name('superadmin.companies.index');
     Route::get('company/{id}/edit', 'editCompany')->name('superadmin.company.edit');
     Route::post('company/{id}', 'updateCompanyBySuperadmin')->name('superadmin.company.update');
-    Route::delete('user/{id}', 'deleteUser')->name('superadmin.user.delete'); // Kullanıcı yönetimi
-   
+     Route::get('companies/create', 'superadminCreateCompany')->name('superadmin.companies.create');
+    Route::post('companies', 'superadminStoreCompany')->name('superadmin.companies.store');
+    Route::get('companies/{id}/edit', 'editCompany')->name('superadmin.companies.edit');
+    Route::put('companies/{id}', 'updateCompanyBySuperadmin')->name('superadmin.companies.update');
+    Route::get('reviews', 'superadminReviews')->name('superadmin.reviews.index');
+   Route::get('users/admins', 'superadminUsersAdmins')->name('superadmin.users.admins');
+   Route::get('users/customers', 'superadminUsersCustomers')->name('superadmin.users.customers');
+  Route::get('users/staff', 'superadminUsersStaff')->name('superadmin.users.staff');
+  Route::get('users/admins',      'superadminUsersAdmins')     ->name('superadmin.users.admins');     // ← EKLENDİ
+    Route::get('users/customers',   'superadminUsersCustomers')->name('superadmin.users.customers');  // ← EKLENDİ
+    Route::get('users/staff',       'superadminUsersStaff')    ->name('superadmin.users.staff');      // ← EKLENDİ
+
 });

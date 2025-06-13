@@ -1,7 +1,8 @@
-
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="{{ route('login.form') }}">
- 
+    <img src="{{ asset('panel/assets/images/logo/logo-fold.png') }}"
+         alt="Logo"
+         style="height: 40px; width: auto;">
   </a>
   <div class="collapse navbar-collapse">
     <ul class="navbar-nav ml-auto">

@@ -1,5 +1,6 @@
-{{-- resources/views/dash/adminStaffEdit.blade.php --}}
-@extends('layouts.app')
+
+@extends('layouts.admin')
+@extends('layouts.admin')
 
 @section('title', isset($staff) 
     ? 'Admin – Personel Düzenle: ' . $staff->full_name 

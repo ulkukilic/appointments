@@ -97,28 +97,27 @@ class BookingController extends Controller
 
   public function adminCategories()
 {
-    
-    $companyId = session('company_uni_id');  // Session'dan şirket ve kullanıcı tipini alıyoruz
-    $userType = session('user_type_id');
+    // Oturumdan admin kullanıcının ID’sini al
+    $userId = session('user_uni_id');
 
-    // SuperAdmin = 3 Admin = 2   // Admin ise sadece kendi sirketinin kategorilerini gorsun 
-    if ($userType == 2) 
-    {
-       
-        $categories = DB::table('companies') //  Sadece kullanıcının sahibi olduğu şirketlerin kategorilerini göstermek
-            ->where('owner_user_uni_id', session('user_uni_id')) // Kullanıcının sahip olduğu şirketler
-            ->pluck('category') // Sadece kategori isimlerini al
-            ->unique() // Aynı kategorilerden sadece biri
-            ->values(); // Dizi şeklinde al
-    } 
-    else 
-    {
-        
-        $categories = DB::table('companies')->pluck('category')->unique()->values(); // Eger SuperAdmin ise ayni sayfada kalip  tum categorileri gostericek
+    // Admin’in sahip olduğu company_uni_id’leri al
+    $companyIds = DB::table('company_owners')
+        ->where('user_uni_id', $userId)
+        ->pluck('company_uni_id')
+        ->toArray();
+
+    // Eğer hiç şirketi yoksa boş collection, yoksa o ID’ler içindeki companies’ı getir
+    if (empty($companyIds)) {
+        $companies = collect();
+    } else {
+        $companies = DB::table('companies')
+            ->whereIn('company_uni_id', $companyIds)
+            ->orderBy('name')
+            ->get();
     }
 
-    // Kategorileri adminCategories görünümüne gönder
-    return view('dash.adminCategories', compact('categories'));
+    // dash.adminCompanies blade’ine gönderiyoruz
+    return view('dash.adminCompanies', compact('companies'));
 }
 
 
@@ -136,8 +135,166 @@ class BookingController extends Controller
         return back()->with('success', 'Şirket başarıyla güncellendi.'); // islem sonrasi ayni sayfadaa donup basari mesaji veriyoruz
     }
 
-   
-    
+   // BookingController.php içinde
+public function superadminAppointments()
+{
+    // Tüm şirketlerin tüm randevularını çekin
+    $list = DB::table('appointments as a')
+        ->leftJoin('users as u','a.user_uni_id','u.user_uni_id')
+        ->leftJoin('services as s','a.service_id','s.service_id')
+        ->leftJoin('staff_members as sm','a.staff_member_uni_id','sm.staff_member_uni_id')
+        ->leftJoin('companies as c','a.company_uni_id','c.company_uni_id')
+        ->select(
+          'a.appointment_id',
+          'c.name as company_name',
+          'u.full_name as customer_name',
+          'u.email',
+          's.name as service_name',
+          'sm.full_name as staff_name',
+          'a.scheduled_time',
+          'a.status'
+        )
+        ->orderBy('a.created_at','desc')
+        ->get();
+
+    return view('dash.superadminAppointments', compact('list'));
+}
+public function superadminUsers()
+{
+    $users = DB::table('users')->get();
+    return view('dash.superadminUsers', compact('users'));
+}
+ public function superadminCreateUser()
+    {
+        return view('dash.superadminUsersCreate');
+    }
+
+    // Formdan geleni kaydet
+    public function superadminStoreUser(Request $request)
+    {
+        $data = $request->validate([
+            'full_name' => 'required|string|max:100',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|string|min:6|confirmed',
+        ]);
+        $data['password'] = Hash::make($data['password']);
+        DB::table('users')->insert([
+            'user_uni_id' => Str::uuid(),
+            'full_name'   => $data['full_name'],
+            'email'       => $data['email'],
+            'password'    => $data['password'],
+            'created_at'  => now(),
+        ]);
+        return redirect()->route('superadmin.users.index')
+                         ->with('success','Kullanıcı başarıyla eklendi.');
+    }
+
+    // Düzenleme formu
+    public function superadminEditUser($id)
+    {
+        $user = DB::table('users')->where('user_uni_id',$id)->first();
+        return view('dash.superadminUsersEdit', compact('user'));
+    }
+
+    // Güncelleme
+    public function superadminUpdateUser(Request $request, $id)
+    {
+        $data = $request->validate([
+            'full_name' => 'required|string|max:100',
+            'email'     => "required|email|unique:users,email,{$id},user_uni_id",
+            'password'  => 'nullable|string|min:6|confirmed',
+        ]);
+        $update = [
+            'full_name' => $data['full_name'],
+            'email'     => $data['email'],
+            'updated_at'=> now(),
+        ];
+        if ($request->filled('password')) {
+            $update['password'] = Hash::make($data['password']);
+        }
+        DB::table('users')->where('user_uni_id',$id)->update($update);
+        return redirect()->route('superadmin.users.index')
+                         ->with('success','Kullanıcı başarıyla güncellendi.');
+    }
+
+// Yeni şirket formunu gösterir
+public function superadminCreateCompany()
+{
+    return view('dash.superadminCompaniesCreate');
+}
+
+// Formdan geleni kaydeder
+public function superadminStoreCompany(Request $request)
+{
+    $data = $request->validate([
+        'name'         => 'required|string|max:255',
+        'category'     => 'required|string|max:100',
+        'email'        => 'nullable|email',
+        'address'      => 'nullable|string',
+        'phone_number' => 'nullable|string',
+        'description'  => 'nullable|string',
+    ]);
+
+    DB::table('companies')->insert([
+        'company_uni_id' => Str::uuid(),
+        'name'           => $data['name'],
+        'category'       => $data['category'],
+        'email'          => $data['email'] ?? null,
+        'address'        => $data['address'] ?? null,
+        'phone_number'   => $data['phone_number'] ?? null,
+        'description'    => $data['description'] ?? null,
+        'created_at'     => now(),
+    ]);
+
+    return redirect()->route('superadmin.companies.index')
+                     ->with('success','Yeni şirket eklendi.');
+}
+ public function superadminUsersAdmins()
+    {
+        $users = DB::table('users')
+                   ->where('user_type_id', 2)
+                   ->get();
+
+        return view('dash.superadminUsersAdmins', compact('users'));
+    }
+
+    /**
+     * Müşteri kullanıcılarını listele
+     */
+    public function superadminUsersCustomers()
+    {
+        $users = DB::table('users')
+                   ->where('user_type_id', 1)
+                   ->get();
+
+        return view('dash.superadminUsersCustomers', compact('users'));
+    }
+
+    /**
+     * Çalışan kullanıcılarını listele
+     */
+    public function superadminUsersStaff()
+    {
+        $staff = DB::table('staff_members')
+                   ->get();
+
+        return view('dash.superadminUsersStaff', compact('staff'));
+    }
+public function superadminReviews()
+{
+    $reviews = DB::table('reviews as r')
+                 ->join('users as u','r.user_uni_id','u.user_uni_id')
+                 ->select('r.*','u.full_name as user_name')
+                 ->get();
+    return view('dash.superadminReviews', compact('reviews'));
+}
+  
+public function superadminCompanies()
+{
+    $companies = DB::table('companies')->get();
+    return view('dash.superadminCompanies', compact('companies'));
+}
+ 
    public function update(Request $request, $company_uni_id) // Yalnızca kendi şirketini güncelleyebilir (admin)
     {
             if (session('company_uni_id') != $company_uni_id)  // session da tutulan kullanicinin company_uni_id si ile ayni sirket id sini mi guncelliyor kontrol edilir 
@@ -610,7 +767,7 @@ public function adminAppointments()
             ->leftJoin('services as s', 'a.service_id', '=', 's.service_id')
             ->leftJoin('staff_members as sm', 'a.staff_member_uni_id', '=', 'sm.staff_member_uni_id')
             ->leftJoin('companies as c', 'a.company_uni_id', '=', 'c.company_uni_id')
-            ->where('a.company_uni_id', $companyId)
+            ->whereIn('a.company_uni_id', $companyIds)  // ↔ Burada tek ID değil, dizi kullanıyoruz
             ->select(
                 'a.appointment_id',
                 'c.name as company_name',       
@@ -627,6 +784,41 @@ public function adminAppointments()
 
     // Listeyi view’e gönder
     return view('dash.adminAppointments', compact('list'));
+}
+
+  // app/Http/Controllers/BookingController.php
+
+public function adminReviews()
+{
+    // Oturumdaki admin kullanıcının user_uni_id'si
+    $userId = session('user_uni_id');
+
+    // Admin’in sahip olduğu tüm şirketlerin ID’lerini al
+    $companyIds = DB::table('company_owners')
+        ->where('user_uni_id', $userId)
+        ->pluck('company_uni_id')
+        ->toArray();
+
+    // Eğer hiç şirketi yoksa boş collection, yoksa o ID’lerdeki yorumları çek
+    if (empty($companyIds)) {
+        $reviews = collect();
+    } else {
+        $reviews = DB::table('reviews as r')
+            ->join('users as u', 'r.user_uni_id', '=', 'u.user_uni_id')
+            ->whereIn('r.company_uni_id', $companyIds)
+            ->select(
+                'r.review_id',
+                'u.full_name as customer_name',
+                'r.rating',
+                'r.comment',
+                'r.created_at'
+            )
+            ->orderBy('r.created_at', 'desc')
+            ->get();
+    }
+
+    // dash/adminReviews.blade.php’e gönderiyoruz
+    return view('dash.adminReviews', compact('reviews'));
 }
 
     public function deleteUser($userId)
