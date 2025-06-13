@@ -13754,6 +13754,13 @@ html, body {
         padding:.5rem 1rem .5rem 2.5rem;
     }
 
+/* public/panel/assets/css/app.css or style.css */
+.table.table-striped {
+  background-color: #fff !important;
+}
+.table.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f9f9f9; /* or still white as you prefer */
+}
 
 /* ------------------------------------------------------------------
    MEDYA SORGULARI

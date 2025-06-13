@@ -42,8 +42,14 @@
     /* İçerik wrapper */
     .content-wrapper {
       margin-left: 220px; /* sidebar genişliği */
-      padding: 1rem;
+      padding: 0.5rem 1rem;   /* reduced top padding */
       flex: 1;
+      margin-top: -0.5rem;
+    }
+     .container-inner {
+      max-width: 1200px;
+      margin: -1rem auto 0;  /* pull up by 1rem */
+      padding: 0 1rem;
     }
   </style>
 </head>

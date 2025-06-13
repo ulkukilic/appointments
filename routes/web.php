@@ -57,26 +57,40 @@ Route::get('/clrall', function () {
           Route::post('reviews/{company}', 'storeReview')->middleware('userType:1')->name('reviews.store');
     
      });
+       
+      // — Customer rotaları (user_type = 1)
+         Route::prefix('dash/customer')->middleware('userType:1')->controller(BookingController::class)->group(function () {
+        Route::get('/', 'showCustomerDashboard')->name('dash.customer');
+         Route::get('appointments', 'customerAppointments')->name('dash.customer.appointments');
+         
+    });
+
 
     // — admin rotaları (user_type = 2)
     Route::prefix('admin')->middleware('userType:2')->controller(BookingController::class)->group(function () {   // sadece adminin yapabildigi kontroller
     Route::get('categories', 'adminCategories')->name('admin.categories.index');// Kategori yönetimi
     Route::get('reviews', 'adminReviews')->name('admin.reviews.index');
+   Route::delete('reviews/{id}',   'deleteAdminReview')->name('admin.reviews.delete');
     Route::get('staff', 'listStaff')->name('admin.staff.index'); // Çalışan yönetimi ekleyebilir silebilir
     Route::post('staff', 'addStaff')->name('admin.staff.add');
     Route::get('staff/edit/{id}', 'editStaff')->name('admin.staff.edit');
     Route::post('staff/update/{id}', 'updateStaff')->name('admin.staff.update');
     Route::delete('staff/{id}', 'deleteStaff')->name('admin.staff.delete');
+     Route::post('staff/{id}/toggle','toggleStaff')->name('admin.staff.toggle');
 
     Route::get('appointments', 'adminAppointments')->name('admin.appointments');  // Randevu yönetimi kontrol ve update
     Route::post('appointments/{id}', 'updateStatus')->name('admin.appointments.update');
     Route::post('companies/{company_uni_id}/update', 'updateCompany')->name('admin.companies.update');// Şirket güncelleme
+    Route::get('admin/categories', 'adminCategories')->name('admin.categories.index');
 
     Route::get('availability', 'showAvailabilityManagement')->name('admin.availability.index');
     Route::post('availability/add', 'addAvailabilitySlot')->name('admin.availability.add');
     Route::get('availability/add', fn() => redirect()->route('dash.admin'));
     Route::post('availability/{slotId}', 'updateAvailabilitySlot')->name('admin.availability.update');
-    
+    Route::get('services',        'adminServices')->name('admin.services.index');
+    Route::get('services/create', 'showServiceForm')->name('admin.services.create');
+    Route::post('services',       'storeService')->name('admin.services.store');
+
   });
 
   // — Süperadmin rotaları (user_type = 3)

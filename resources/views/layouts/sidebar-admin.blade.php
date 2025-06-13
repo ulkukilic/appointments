@@ -1,129 +1,121 @@
-{{-- resources/views/layouts/sidebar-superadmin.blade.php --}}
-<nav class="sidebar bg-white vh-100 overflow-auto border-end">
-  <div class="side-nav-inner p-3">
+<!-- resources/views/layouts/sidebar-admin.blade.php -->
+<nav class="side-nav bg-white vh-100 overflow-auto border-end">
+  <div class="side-nav-inner">
+    <ul class="side-nav-menu scrollable">
 
-    {{-- Randevular --}}
-    <li class="nav-item mb-2">
-      <a class="nav-link d-flex justify-content-between align-items-center"
-         data-bs-toggle="collapse"
-         href="#appointmentsMenu"
-         role="button"
-         aria-expanded="{{ request()->is('dash/superadmin/appointments*') ? 'true' : 'false' }}"
-         aria-controls="appointmentsMenu">
-        <span><i class="bi bi-calendar-check me-2"></i>Randevular</span>
-        <i class="bi bi-chevron-down"></i>
-      </a>
-      <div class="collapse {{ request()->is('dash/superadmin/appointments*') ? 'show' : '' }}"
-           id="appointmentsMenu">
-        <ul class="nav flex-column ms-3">
-          <li class="nav-item">
-            <a href="{{ route('superadmin.appointments') }}"
-               class="nav-link {{ request()->routeIs('superadmin.appointments') ? 'active' : '' }}">
+      {{-- GENEL BAKIŞ --}}
+      <li class="nav-item">
+        <a href="{{ route('dash.admin') }}"
+           class="nav-link {{ request()->routeIs('dash.admin') ? 'active' : '' }}">
+          <span class="icon-holder"><i class="bi bi-speedometer2"></i></span>
+          <span class="title">Genel Bakış</span>
+        </a>
+      </li>
+
+      {{-- RANDEVULAR --}}
+      <li class="nav-item dropdown {{ request()->routeIs('admin.appointments*') ? 'open' : '' }}">
+        <a href="#" class="nav-link menu-toggle d-flex align-items-center">
+          <span class="icon-holder"><i class="bi bi-calendar-check"></i></span>
+          <span class="title">Randevular</span>
+          <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="{{ route('admin.appointments') }}"
+               class="{{ request()->routeIs('admin.appointments') ? 'active' : '' }}">
               Tüm Randevular
             </a>
           </li>
         </ul>
-      </div>
-    </li>
+      </li>
 
-    {{-- Kullanıcılar --}}
-    <li class="nav-item mb-2">
-      <a class="nav-link d-flex justify-content-between align-items-center"
-         data-bs-toggle="collapse"
-         href="#usersMenu"
-         role="button"
-         aria-expanded="{{ request()->is('dash/superadmin/users*') ? 'true' : 'false' }}"
-         aria-controls="usersMenu">
-        <span><i class="bi bi-people me-2"></i>Kullanıcılar</span>
-        <i class="bi bi-chevron-down"></i>
-      </a>
-      <div class="collapse {{ request()->is('dash/superadmin/users*') ? 'show' : '' }}"
-           id="usersMenu">
-        <ul class="nav flex-column ms-3">
-          <li class="nav-item">
-            <a href="{{ route('superadmin.users.admins') }}"
-               class="nav-link {{ request()->routeIs('superadmin.users.admins') ? 'active' : '' }}">
-              Admin Kullanıcıları
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ route('superadmin.users.customers') }}"
-               class="nav-link {{ request()->routeIs('superadmin.users.customers') ? 'active' : '' }}">
-              Müşteri Kullanıcıları
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ route('superadmin.users.staff') }}"
-               class="nav-link {{ request()->routeIs('superadmin.users.staff') ? 'active' : '' }}">
-              Çalışan Kullanıcıları
+      {{-- ŞİRKET BİLGİLERİ --}}
+      <li class="nav-item dropdown {{ request()->routeIs('admin.categories*') ? 'open' : '' }}">
+        <a href="#" class="nav-link menu-toggle d-flex align-items-center">
+          <span class="icon-holder"><i class="bi bi-building"></i></span>
+          <span class="title">Şirket Bilgileri</span>
+          <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="{{ route('admin.categories.index') }}"
+               class="{{ request()->routeIs('admin.categories.index') ? 'active' : '' }}">
+              Düzenle
             </a>
           </li>
         </ul>
-      </div>
-    </li>
+      </li>
 
-    {{-- Şirketler --}}
-    <li class="nav-item mb-2">
-      <a class="nav-link d-flex justify-content-between align-items-center"
-         data-bs-toggle="collapse"
-         href="#companiesMenu"
-         role="button"
-         aria-expanded="{{ request()->is('dash/superadmin/companies*') ? 'true' : 'false' }}"
-         aria-controls="companiesMenu">
-        <span><i class="bi bi-building me-2"></i>Şirketler</span>
-        <i class="bi bi-chevron-down"></i>
-      </a>
-      <div class="collapse {{ request()->is('dash/superadmin/companies*') ? 'show' : '' }}"
-           id="companiesMenu">
-        <ul class="nav flex-column ms-3">
-          <li class="nav-item">
-            <a href="{{ route('superadmin.companies.index') }}"
-               class="nav-link {{ request()->routeIs('superadmin.companies.index') ? 'active' : '' }}">
-              Şirket Listele
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ route('superadmin.companies.create') }}"
-               class="nav-link {{ request()->routeIs('superadmin.companies.create') ? 'active' : '' }}">
-              Şirket Ekle
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ route('superadmin.companies.index') }}"
-               class="nav-link">
-              Şirket Düzenle
-            </a>
-          </li>
-          <li class="nav-item">
-            <a href="{{ route('superadmin.companies.index') }}"
-               class="nav-link">
-              Şirket Sil
+      {{-- ÇALIŞAN YÖNETİMİ --}}
+      <li class="nav-item dropdown {{ request()->routeIs('admin.staff*') ? 'open' : '' }}">
+        <a href="#" class="nav-link menu-toggle d-flex align-items-center">
+          <span class="icon-holder"><i class="bi bi-people-fill"></i></span>
+          <span class="title">Çalışan Yönetimi</span>
+          <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="{{ route('admin.staff.index') }}"
+               class="{{ request()->routeIs('admin.staff*') ? 'active' : '' }}">
+              Çalışan Listesi
             </a>
           </li>
         </ul>
-      </div>
-    </li>
+      </li>
 
-    {{-- Diğer sabit menüler --}}
-    <li class="nav-item mb-2">
-      <a href="{{ route('dash.superadmin') }}"
-         class="nav-link {{ request()->routeIs('dash.superadmin') ? 'active' : '' }}">
-        <i class="bi bi-speedometer2 me-2"></i>Genel Bakış
-      </a>
-    </li>
-    <li class="nav-item mb-2">
-      <a href="{{ route('superadmin.reviews.index') }}"
-         class="nav-link {{ request()->routeIs('superadmin.reviews.*') ? 'active' : '' }}">
-        <i class="bi bi-chat-dots me-2"></i>Yorumlar
-      </a>
-    </li>
+      {{-- SERVİSLER --}}
+      <li class="nav-item dropdown {{ request()->routeIs('admin.services*') ? 'open' : '' }}">
+        <a href="#" class="nav-link menu-toggle d-flex align-items-center">
+          <span class="icon-holder"><i class="bi bi-gear-fill"></i></span>
+          <span class="title">Servisler</span>
+          <i class="bi bi-chevron-down ms-auto"></i>
+        </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href="{{ route('admin.services.index') }}"
+               class="{{ request()->routeIs('admin.services.index') ? 'active' : '' }}">
+              Servis Listesi
+            </a>
+          </li>
+          <li>
+            <a href="{{ route('admin.services.create') }}"
+               class="{{ request()->routeIs('admin.services.create') ? 'active' : '' }}">
+              Yeni Servis Ekle
+            </a>
+          </li>
+        </ul>
+      </li>
 
-    {{-- Çıkış --}}
-    <li class="nav-item mt-auto px-3">
-      <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button class="btn btn-outline-danger w-100">Çıkış Yap</button>
-      </form>
-    </li>
+      {{-- YORUM YÖNETİMİ --}}
+      <li class="nav-item">
+        <a href="{{ route('admin.reviews.index') }}"
+           class="nav-link {{ request()->routeIs('admin.reviews*') ? 'active' : '' }}">
+          <span class="icon-holder"><i class="bi bi-chat-dots"></i></span>
+          <span class="title">Yorum Yönetimi</span>
+        </a>
+      </li>
+
+      {{-- ÇIKIŞ --}}
+      <li class="nav-item mt-auto px-3">
+        <form method="POST" action="{{ route('logout') }}">
+          @csrf
+          <button class="btn btn-outline-danger w-100">Çıkış Yap</button>
+        </form>
+      </li>
+
+    </ul>
   </div>
 </nav>
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.side-nav .menu-toggle').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        btn.closest('.nav-item.dropdown').classList.toggle('open');
+      });
+    });
+  });
+</script>
+@endpush

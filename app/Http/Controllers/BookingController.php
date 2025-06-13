@@ -117,7 +117,7 @@ class BookingController extends Controller
     }
 
     // dash.adminCompanies blade’ine gönderiyoruz
-    return view('dash.adminCompanies', compact('companies'));
+return view('dash.adminCategories', compact('companies'));   
 }
 
 
@@ -188,6 +188,128 @@ public function superadminUsers()
         return redirect()->route('superadmin.users.index')
                          ->with('success','Kullanıcı başarıyla eklendi.');
     }
+    public function toggleStaff($id)
+{
+    // fetch staff
+    $staff = DB::table('staff_members')->where('staff_member_uni_id',$id)->first();
+    if (!$staff || $staff->company_uni_id != session('company_uni_id')) {
+        abort(403);
+    }
+    // toggle
+    $new = $staff->is_active ? 0 : 1;
+    DB::table('staff_members')
+      ->where('staff_member_uni_id',$id)
+      ->update(['is_active'=>$new]);
+    return back()->with('success','Çalışan durumu güncellendi.');
+}
+public function adminServices()
+{
+    $companyId = session('company_uni_id');
+    $services = DB::table('company_services as cs')
+                  ->join('services as s','cs.service_id','s.service_id')
+                  ->where('cs.company_uni_id',$companyId)
+                  ->select('cs.id','s.name','cs.price','cs.duration')
+                  ->get();
+    return view('dash/adminServices',compact('services'));
+}
+
+public function showServiceForm()
+{
+    return view('dash/adminServicesCreate');
+}
+
+public function storeService(Request $r)
+{
+    $r->validate([
+      'name'=>'required|string',
+      'price'=>'required|numeric',
+      'duration'=>'required|integer',
+    ]);
+    // insert into services if new
+    $service = DB::table('services')->where('name',$r->name)->first();
+    if (!$service) {
+      $sid = DB::table('services')->insertGetId([
+        'name'=>$r->name,
+        'standard_duration'=>$r->duration,
+        'created_at'=>now(),
+      ]);
+    } else {
+      $sid = $service->service_id;
+    }
+    // link to company
+    DB::table('company_services')->insert([
+      'company_uni_id'=>session('company_uni_id'),
+      'service_id'=>$sid,
+      'price'=>$r->price,
+      'duration'=>$r->duration,
+      'created_at'=>now(),
+    ]);
+    return redirect()->route('admin.services.index')
+                     ->with('success','Yeni servis eklendi.');
+}
+
+public function superadminStoreCompany(Request $request)
+{
+    $data = $request->validate([
+        'name'             => 'required|string|max:255',
+        'category'         => 'required|string|max:100',
+        'email'            => 'nullable|email',
+        'address'          => 'nullable|string',
+        'phone_number'     => 'nullable|string',
+        'description'      => 'nullable|string',
+        'owner_identifier' => 'required|string',
+    ]);
+
+    // 1) create the company
+    $companyId = DB::table('companies')->insertGetId([
+        'name'           => $data['name'],
+        'category'       => $data['category'],
+        'email'          => $data['email'] ?? null,
+        'address'        => $data['address'] ?? null,
+        'phone_number'   => $data['phone_number'] ?? null,
+        'description'    => $data['description'] ?? null,
+        'created_at'     => now(),
+    ]);
+
+    // 2) find or create the user by email or full_name
+    $identifier = $data['owner_identifier'];
+    $user = DB::table('users')
+        ->where('email', $identifier)
+        ->orWhere('full_name', $identifier)
+        ->first();
+
+    if (! $user) {
+        // if it’s not an email, make up a dummy one
+        $email = filter_var($identifier, FILTER_VALIDATE_EMAIL)
+                 ? $identifier
+                 : Str::slug($identifier).'@example.com';
+
+        $userId = DB::table('users')->insertGetId([
+            'full_name'    => $identifier,
+            'email'        => $email,
+            'password'     => Hash::make(Str::random(12)),
+            'user_type_id' => 2, // Admin type
+            'created_at'   => now(),
+        ]);
+    } else {
+        $userId = $user->user_uni_id;
+        // if they exist but aren’t Admin, upgrade them
+        if ($user->user_type_id != 2) {
+            DB::table('users')->where('user_uni_id', $userId)
+              ->update(['user_type_id' => 2]);
+        }
+    }
+
+    // 3) assign as owner
+    DB::table('company_owners')->insert([
+        'company_uni_id' => $companyId,
+        'user_uni_id'    => $userId,
+        'created_at'     => now(),
+    ]);
+
+    return redirect()->route('superadmin.companies.index')
+                     ->with('success','Yeni şirket ve sahibi başarıyla eklendi.');
+}
 
     // Düzenleme formu
     public function superadminEditUser($id)
@@ -223,32 +345,7 @@ public function superadminCreateCompany()
     return view('dash.superadminCompaniesCreate');
 }
 
-// Formdan geleni kaydeder
-public function superadminStoreCompany(Request $request)
-{
-    $data = $request->validate([
-        'name'         => 'required|string|max:255',
-        'category'     => 'required|string|max:100',
-        'email'        => 'nullable|email',
-        'address'      => 'nullable|string',
-        'phone_number' => 'nullable|string',
-        'description'  => 'nullable|string',
-    ]);
 
-    DB::table('companies')->insert([
-        'company_uni_id' => Str::uuid(),
-        'name'           => $data['name'],
-        'category'       => $data['category'],
-        'email'          => $data['email'] ?? null,
-        'address'        => $data['address'] ?? null,
-        'phone_number'   => $data['phone_number'] ?? null,
-        'description'    => $data['description'] ?? null,
-        'created_at'     => now(),
-    ]);
-
-    return redirect()->route('superadmin.companies.index')
-                     ->with('success','Yeni şirket eklendi.');
-}
  public function superadminUsersAdmins()
     {
         $users = DB::table('users')
@@ -425,6 +522,7 @@ public function superadminCompanies()
 
             // Şirkete ait hizmetleri çekiyoruz (hizmetin ID'si, adı ve standart süresiyle birlikte)
             $services = DB::table('company_services as cs')
+               ->select('staff_member_uni_id','full_name','experience_level','is_active')
                 ->join('services as s', 'cs.service_id', '=', 's.service_id')
                 ->where('cs.company_uni_id', $companyId)
                 ->select('s.service_id', 's.name', 's.standard_duration')
@@ -790,37 +888,77 @@ public function adminAppointments()
 
 public function adminReviews()
 {
-    // Oturumdaki admin kullanıcının user_uni_id'si
+    $companyIds = DB::table('company_owners')
+        ->where('user_uni_id', session('user_uni_id'))
+        ->pluck('company_uni_id');
+
+    $reviews = DB::table('reviews as r')
+        ->whereIn('r.company_uni_id', $companyIds)
+        ->join('users as u','r.user_uni_id','u.user_uni_id')
+        ->select(
+            'r.review_id',
+            'u.full_name as customer',
+            'r.comment',
+            'r.rating',
+            'r.staff_member_uni_id',
+            'r.created_at'
+        )
+        ->orderBy('r.created_at','desc')
+        ->get();
+
+    return view('dash/adminReviews', compact('reviews'));
+}
+// Show the customer dashboard (categories view)
+public function showCustomerDashboard()
+{
+    // same logic you had in dash/customer.blade.php for categories
+    $categories = [
+      'hospital'   => ['Hospital',     'hospital.jpg'],
+      'dentist'    => ['Dentist',      'dentist.jpg'],
+      // … etc …
+    ];
+    return view('dash.customer', compact('categories'));
+}
+public function showCustomerCategories()
+{
+    // pull distinct categories from companies
+    $categories = DB::table('companies')
+        ->pluck('category')
+        ->unique()
+        ->values();
+
+    return view('dash.customerCategories', compact('categories'));
+}
+// List this customer’s appointments
+public function customerAppointments()
+{
     $userId = session('user_uni_id');
 
-    // Admin’in sahip olduğu tüm şirketlerin ID’lerini al
-    $companyIds = DB::table('company_owners')
-        ->where('user_uni_id', $userId)
-        ->pluck('company_uni_id')
-        ->toArray();
+    $list = DB::table('appointments as a')
+        ->leftJoin('companies as c', 'a.company_uni_id', '=', 'c.company_uni_id')
+        ->leftJoin('services as s',  'a.service_id',     '=', 's.service_id')
+        ->leftJoin('staff_members as sm','a.staff_member_uni_id','=','sm.staff_member_uni_id')
+        ->where('a.user_uni_id', $userId)
+        ->select(
+            'a.appointment_id',
+            'c.name      as company_name',
+            's.name      as service_name',
+            'sm.full_name as staff_name',
+            'a.scheduled_time',
+            'a.status'
+        )
+        ->orderBy('a.created_at','desc')
+        ->get();
 
-    // Eğer hiç şirketi yoksa boş collection, yoksa o ID’lerdeki yorumları çek
-    if (empty($companyIds)) {
-        $reviews = collect();
-    } else {
-        $reviews = DB::table('reviews as r')
-            ->join('users as u', 'r.user_uni_id', '=', 'u.user_uni_id')
-            ->whereIn('r.company_uni_id', $companyIds)
-            ->select(
-                'r.review_id',
-                'u.full_name as customer_name',
-                'r.rating',
-                'r.comment',
-                'r.created_at'
-            )
-            ->orderBy('r.created_at', 'desc')
-            ->get();
-    }
-
-    // dash/adminReviews.blade.php’e gönderiyoruz
-    return view('dash.adminReviews', compact('reviews'));
+    return view('dash.customerAppointments', compact('list'));
 }
 
+// new: allow admin to delete a review
+public function deleteAdminReview($id)
+{
+    DB::table('reviews')->where('review_id', $id)->delete();
+    return back()->with('success','Yorum silindi.');
+}
     public function deleteUser($userId)
     {
         // Verilen kullanıcı ID'sine ait kaydı 'users' tablosundan sil

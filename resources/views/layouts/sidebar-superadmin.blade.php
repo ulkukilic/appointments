@@ -88,8 +88,8 @@
                             Şirket Ekle
                         </a>
                     </li>
-                    <li><a href="{{ route('superadmin.companies.index') }}">Şirket Düzenle</a></li>
-                    <li><a href="{{ route('superadmin.companies.index') }}">Şirket Sil</a></li>
+                
+                
                 </ul>
             </li>
 

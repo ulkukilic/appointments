@@ -8,35 +8,49 @@
   <link href="{{ asset('panel/assets/vendors/bootstrap/dist/css/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ asset('panel/assets/css/app.css') }}" rel="stylesheet">
 
+ 
   <style>
-   /* --- SAYFA DÜZENİ: GRID İLE --- */
-.page-layout {
-  display: grid;
-  grid-template-columns: 220px 1fr; /* sidebar 220px, içerik geri kalan */
-}
-.sidebar {
-  position: fixed;
-  top: 0; left: 0;
-  width: 220px;
-  height: 100vh;
-  background: #fff;
-  border-right: 1px solid #ddd;
-  z-index: 1000;
-}
-.content-wrapper {
-  /* grid’te 2. kolonda yer alır; zaten otomatik 220px’in sağına konulur */
-  padding: 1rem 0;
-  margin-left: 220px;  /* sabit bir “düşme” oluşturmuyoruz, ama grid sayesinde yine 220px kaydırma uygulanacak */
-}
-.container-inner {
-  max-width: 1200px;   /* Enlink ile aynı maksimum genişlik */
-  margin: 0 auto;      /* ortala */
-  padding: 0 1rem;     /* içerik kenar boşlukları */
-}
-.page-title {
-  margin: 1rem 0;
-}
+    /* Sabit header yüksekliği */
+    .header {
+      height: 70px;
+      position: fixed;
+      top: 0; left: 0;
+      right: 0;
+      background: #fff;
+      border-bottom: 1px solid #edf2f9;
+      z-index: 1030;
+    }
 
+    /* Layout: sidebar + content */
+    .page-layout {
+      display: flex;
+      margin-top: 70px; /* header kadar boşluk */
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 220px;
+      background: #fff;
+      border-right: 1px solid #ddd;
+      position: fixed;
+      top: 70px;      /* header’ın hemen altı */
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    /* İçerik wrapper */
+    .content-wrapper {
+      margin-left: 220px; /* sidebar genişliği */
+      padding: 0.5rem 1rem;   /* reduced top padding */
+      flex: 1;
+      margin-top: -0.5rem;
+    }
+     .container-inner {
+      max-width: 1200px;
+      margin: -1rem auto 0;  /* pull up by 1rem */
+      padding: 0 1rem;
+    }
   </style>
 </head>
 <body>
@@ -56,13 +70,13 @@
   <script src="{{ asset('panel/assets/vendors/jquery/dist/jquery.min.js') }}"></script>
   <script src="{{ asset('panel/assets/vendors/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
  <script>
-    // Sidebar içindeki collapsible toggle
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.sidebar .dropdown-toggle').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          var li = btn.closest('.nav-item.dropdown');
-          li.classList.toggle('open');
-        });
+    document.addEventListener('DOMContentLoaded',()=>{
+  /* artık .side-nav içinde arıyoruz */
+  document.querySelectorAll('.side-nav .dropdown-toggle').forEach(btn=>{
+     btn.addEventListener('click',e=>{
+         e.preventDefault();           // link atlamasın
+         btn.closest('.nav-item.dropdown').classList.toggle('open');
+     });
       });
     });
   </script>
